@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import type { ISerialisedGraph } from '@/lib/litegraph/src/types/serialisation'
-import type { IWidget } from '@/lib/litegraph/src/types/widgets'
+import type { IBaseWidget } from '@/lib/litegraph/src/types/widgets'
 import type { InputSpec } from '@/schemas/nodeDef/nodeDefSchemaV2'
 import {
   compressWidgetInputSlots,
@@ -26,14 +26,18 @@ describe('migrateWidgetsValues', () => {
       }
     }
 
-    const widgets: IWidget[] = [
-      { name: 'normalInput', type: 'number' },
-      { name: 'anotherNormal', type: 'number' }
-    ] as unknown as IWidget[]
+    const widgets: Partial<IBaseWidget>[] = [
+      { name: 'normalInput' },
+      { name: 'anotherNormal' }
+    ]
 
     const widgetValues = [42, 'dummy value', 3.14]
 
-    const result = migrateWidgetsValues(inputDefs, widgets, widgetValues)
+    const result = migrateWidgetsValues(
+      inputDefs,
+      widgets as IBaseWidget[],
+      widgetValues
+    )
     expect(result).toEqual([42, 3.14])
   })
 
@@ -46,7 +50,7 @@ describe('migrateWidgetsValues', () => {
       }
     }
 
-    const widgets: IWidget[] = []
+    const widgets: IBaseWidget[] = []
     const widgetValues = [42, 'extra value']
 
     const result = migrateWidgetsValues(inputDefs, widgets, widgetValues)
@@ -55,8 +59,8 @@ describe('migrateWidgetsValues', () => {
 
   it('should handle empty widgets and values', () => {
     const inputDefs: Record<string, InputSpec> = {}
-    const widgets: IWidget[] = []
-    const widgetValues: any[] = []
+    const widgets: IBaseWidget[] = []
+    const widgetValues: unknown[] = []
 
     const result = migrateWidgetsValues(inputDefs, widgets, widgetValues)
     expect(result).toEqual([])
@@ -79,21 +83,25 @@ describe('migrateWidgetsValues', () => {
       }
     }
 
-    const widgets: IWidget[] = [
-      { name: 'first', type: 'number' },
-      { name: 'last', type: 'number' }
-    ] as unknown as IWidget[]
+    const widgets: Partial<IBaseWidget>[] = [
+      { name: 'first' },
+      { name: 'last' }
+    ]
 
     const widgetValues = ['first value', 'dummy', 'last value']
 
-    const result = migrateWidgetsValues(inputDefs, widgets, widgetValues)
+    const result = migrateWidgetsValues(
+      inputDefs,
+      widgets as IBaseWidget[],
+      widgetValues
+    )
     expect(result).toEqual(['first value', 'last value'])
   })
 })
 
 describe('compressWidgetInputSlots', () => {
   it('should remove unconnected widget input slots', () => {
-    const graph: ISerialisedGraph = {
+    const graph: Partial<ISerialisedGraph> = {
       nodes: [
         {
           id: 1,
@@ -112,17 +120,17 @@ describe('compressWidgetInputSlots', () => {
         }
       ],
       links: [[2, 1, 0, 1, 0, 'INT']]
-    } as unknown as ISerialisedGraph
+    }
 
-    compressWidgetInputSlots(graph)
+    compressWidgetInputSlots(graph as ISerialisedGraph)
 
-    expect(graph.nodes[0].inputs).toEqual([
+    expect(graph.nodes![0].inputs).toEqual([
       { widget: { name: 'bar' }, link: 2, type: 'INT', name: 'bar' }
     ])
   })
 
   it('should update link target slots correctly', () => {
-    const graph: ISerialisedGraph = {
+    const graph: Partial<ISerialisedGraph> = {
       nodes: [
         {
           id: 1,
@@ -144,11 +152,11 @@ describe('compressWidgetInputSlots', () => {
         [2, 1, 0, 1, 1, 'INT'],
         [3, 1, 0, 1, 2, 'INT']
       ]
-    } as unknown as ISerialisedGraph
+    }
 
-    compressWidgetInputSlots(graph)
+    compressWidgetInputSlots(graph as ISerialisedGraph)
 
-    expect(graph.nodes[0].inputs).toEqual([
+    expect(graph.nodes![0].inputs).toEqual([
       { widget: { name: 'bar' }, link: 2, type: 'INT', name: 'bar' },
       { widget: { name: 'baz' }, link: 3, type: 'INT', name: 'baz' }
     ])
@@ -160,12 +168,12 @@ describe('compressWidgetInputSlots', () => {
   })
 
   it('should handle graphs with no nodes gracefully', () => {
-    const graph: ISerialisedGraph = {
+    const graph: Partial<ISerialisedGraph> = {
       nodes: [],
       links: []
-    } as unknown as ISerialisedGraph
+    }
 
-    compressWidgetInputSlots(graph)
+    compressWidgetInputSlots(graph as ISerialisedGraph)
 
     expect(graph.nodes).toEqual([])
     expect(graph.links).toEqual([])
