@@ -1,3 +1,7 @@
+function hasImageType({ type }: File): boolean {
+  return type.startsWith('image')
+}
+
 export async function extractFileFromDragEvent(
   event: DragEvent
 ): Promise<File | FileList | undefined> {
@@ -25,5 +29,3 @@ export async function extractFileFromDragEvent(
   const blob = await response.blob()
   return new File([blob], uri, { type: blob.type })
 }
-
-const hasImageType = ({ type }: File): Boolean => type.startsWith('image');

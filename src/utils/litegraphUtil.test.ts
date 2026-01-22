@@ -27,9 +27,14 @@ vi.mock('@/i18n', () => ({
   t: vi.fn((key) => key)
 }))
 
+interface LGraphMock {
+  add: ReturnType<typeof vi.fn>
+  change: ReturnType<typeof vi.fn>
+}
+
 describe('createNode', () => {
   let mockCanvas: Partial<LGraphCanvas>
-  let mockGraph: any
+  let mockGraph: LGraphMock
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -38,32 +43,23 @@ describe('createNode', () => {
       change: vi.fn()
     }
     mockCanvas = {
-      graph: mockGraph,
+      graph: mockGraph as unknown as Partial<LGraphCanvas>['graph'],
       graph_mouse: [100, 200]
     }
   })
 
   it('should create a node successfully', async () => {
     const mockNode = {
-      pos: [0, 0]
-    } as unknown as LGraphNode
+      pos: [0, 0] as [number, number]
+    }
 
-    vi.mocked(LiteGraph.createNode).mockImplementation(
-      (_name, _title, options: any) => {
-        setTimeout(() => options?.onNodeCreated?.(), 0)
-        return mockNode
-      }
+    vi.mocked(LiteGraph.createNode).mockReturnValue(
+      mockNode as unknown as LGraphNode
     )
 
     const result = await createNode(mockCanvas as LGraphCanvas, 'LoadImage')
 
-    expect(LiteGraph.createNode).toHaveBeenCalledWith(
-      'LoadImage',
-      'LoadImage',
-      {
-        onNodeCreated: expect.any(Function)
-      }
-    )
+    expect(LiteGraph.createNode).toHaveBeenCalledWith('LoadImage')
     expect(mockNode.pos).toEqual([100, 200])
     expect(mockGraph.add).toHaveBeenCalledWith(mockNode)
     expect(mockGraph.change).toHaveBeenCalled()
@@ -78,7 +74,10 @@ describe('createNode', () => {
   })
 
   it('should return null when name is falsy', async () => {
-    const result = await createNode(mockCanvas as LGraphCanvas, null as any)
+    const result = await createNode(
+      mockCanvas as LGraphCanvas,
+      null as unknown as string
+    )
 
     expect(LiteGraph.createNode).not.toHaveBeenCalled()
     expect(result).toBeNull()
@@ -88,14 +87,11 @@ describe('createNode', () => {
     const { useToastStore } =
       await import('@/platform/updates/common/toastStore')
     const mockAddAlert = vi.fn()
-    vi.mocked(useToastStore).mockReturnValue({ addAlert: mockAddAlert } as any)
+    vi.mocked(useToastStore).mockReturnValue({
+      addAlert: mockAddAlert
+    } as unknown as ReturnType<typeof useToastStore>)
 
-    vi.mocked(LiteGraph.createNode).mockImplementation(
-      (_name, _title, options: any) => {
-        setTimeout(() => options?.onNodeCreated?.(), 0)
-        return null
-      }
-    )
+    vi.mocked(LiteGraph.createNode).mockReturnValue(null)
 
     const result = await createNode(mockCanvas as LGraphCanvas, 'InvalidNode')
 
@@ -105,16 +101,13 @@ describe('createNode', () => {
 
   it('should handle graph being null', async () => {
     const mockNode = {
-      pos: [0, 0]
-    } as unknown as LGraphNode
+      pos: [0, 0] as [number, number]
+    }
 
     mockCanvas.graph = null
 
-    vi.mocked(LiteGraph.createNode).mockImplementation(
-      (_name, _title, options: any) => {
-        setTimeout(() => options?.onNodeCreated?.(), 0)
-        return mockNode
-      }
+    vi.mocked(LiteGraph.createNode).mockReturnValue(
+      mockNode as unknown as LGraphNode
     )
 
     const result = await createNode(mockCanvas as LGraphCanvas, 'LoadImage')
@@ -130,14 +123,11 @@ describe('createNode', () => {
     }
 
     const mockNode = {
-      pos: [0, 0]
-    } as unknown as LGraphNode
+      pos: [0, 0] as [number, number]
+    }
 
-    vi.mocked(LiteGraph.createNode).mockImplementation(
-      (_name, _title, options: any) => {
-        setTimeout(() => options?.onNodeCreated?.(), 0)
-        return mockNode
-      }
+    vi.mocked(LiteGraph.createNode).mockReturnValue(
+      mockNode as unknown as LGraphNode
     )
 
     await createNode(mockCanvasWithDifferentPos as LGraphCanvas, 'LoadAudio')
