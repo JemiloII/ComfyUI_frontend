@@ -14,7 +14,7 @@ import {
 } from '@/utils/litegraphUtil'
 import { shouldIgnoreCopyPaste } from '@/workbench/eventHelpers'
 
-export function cloneDataTransfer(original: DataTransfer): DataTransfer {
+function cloneDataTransfer(original: DataTransfer): DataTransfer {
   const persistent = new DataTransfer()
 
   // Copy string data
