@@ -163,7 +163,7 @@ export class ComfyApp {
 
   // TODO: Migrate internal usage to the
   /** @deprecated Use {@link rootGraph} instead */
-  get graph(): unknown {
+  get graph(): LGraph | undefined {
     return this.rootGraphInternal!
   }
 
@@ -1444,7 +1444,6 @@ export class ComfyApp {
       if (file.type.startsWith('image')) {
         const transfer = new DataTransfer()
         transfer.items.add(file)
-        console.log('transfer items', transfer.items)
         const imageNode = await createNode(this.canvas, 'LoadImage')
         await pasteImageNode(this.canvas, transfer.items, imageNode)
         return
