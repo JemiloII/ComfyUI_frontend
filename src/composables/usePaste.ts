@@ -6,7 +6,12 @@ import type { ComfyWorkflowJSON } from '@/platform/workflow/validation/schemas/w
 import { useCanvasStore } from '@/renderer/core/canvas/canvasStore'
 import { app } from '@/scripts/app'
 import { useWorkspaceStore } from '@/stores/workspaceStore'
-import { createNode, isAudioNode, isImageNode, isVideoNode } from '@/utils/litegraphUtil'
+import {
+  createNode,
+  isAudioNode,
+  isImageNode,
+  isVideoNode
+} from '@/utils/litegraphUtil'
 import { shouldIgnoreCopyPaste } from '@/workbench/eventHelpers'
 
 export function cloneDataTransfer(original: DataTransfer): DataTransfer {
@@ -20,12 +25,6 @@ export function cloneDataTransfer(original: DataTransfer): DataTransfer {
     }
   }
 
-  // Copy files
-  for (const file of original.files) {
-    persistent.items.add(file)
-  }
-
-  // Also handle any file-kind items that might not be in .files
   for (const item of original.items) {
     if (item.kind === 'file') {
       const file = item.getAsFile()
