@@ -48,22 +48,11 @@ describe('createNode', () => {
       pos: [0, 0]
     } as unknown as LGraphNode
 
-    vi.mocked(LiteGraph.createNode).mockImplementation(
-      (_name, _title, options: any) => {
-        setTimeout(() => options?.onNodeCreated?.(), 0)
-        return mockNode
-      }
-    )
+    vi.mocked(LiteGraph.createNode).mockReturnValue(mockNode)
 
     const result = await createNode(mockCanvas as LGraphCanvas, 'LoadImage')
 
-    expect(LiteGraph.createNode).toHaveBeenCalledWith(
-      'LoadImage',
-      'LoadImage',
-      {
-        onNodeCreated: expect.any(Function)
-      }
-    )
+    expect(LiteGraph.createNode).toHaveBeenCalledWith('LoadImage')
     expect(mockNode.pos).toEqual([100, 200])
     expect(mockGraph.add).toHaveBeenCalledWith(mockNode)
     expect(mockGraph.change).toHaveBeenCalled()
@@ -90,12 +79,7 @@ describe('createNode', () => {
     const mockAddAlert = vi.fn()
     vi.mocked(useToastStore).mockReturnValue({ addAlert: mockAddAlert } as any)
 
-    vi.mocked(LiteGraph.createNode).mockImplementation(
-      (_name, _title, options: any) => {
-        setTimeout(() => options?.onNodeCreated?.(), 0)
-        return null
-      }
-    )
+    vi.mocked(LiteGraph.createNode).mockReturnValue(null)
 
     const result = await createNode(mockCanvas as LGraphCanvas, 'InvalidNode')
 
@@ -110,12 +94,7 @@ describe('createNode', () => {
 
     mockCanvas.graph = null
 
-    vi.mocked(LiteGraph.createNode).mockImplementation(
-      (_name, _title, options: any) => {
-        setTimeout(() => options?.onNodeCreated?.(), 0)
-        return mockNode
-      }
-    )
+    vi.mocked(LiteGraph.createNode).mockReturnValue(mockNode)
 
     const result = await createNode(mockCanvas as LGraphCanvas, 'LoadImage')
 
@@ -133,12 +112,7 @@ describe('createNode', () => {
       pos: [0, 0]
     } as unknown as LGraphNode
 
-    vi.mocked(LiteGraph.createNode).mockImplementation(
-      (_name, _title, options: any) => {
-        setTimeout(() => options?.onNodeCreated?.(), 0)
-        return mockNode
-      }
-    )
+    vi.mocked(LiteGraph.createNode).mockReturnValue(mockNode)
 
     await createNode(mockCanvasWithDifferentPos as LGraphCanvas, 'LoadAudio')
 

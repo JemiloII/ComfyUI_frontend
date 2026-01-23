@@ -8,7 +8,12 @@ import type {
 import { LiteGraph } from '@/lib/litegraph/src/litegraph'
 import { app } from '@/scripts/app'
 import { createNode, isImageNode } from '@/utils/litegraphUtil'
-import { pasteImageNode, pasteImageNodes, usePaste } from './usePaste'
+import {
+  cloneDataTransfer,
+  pasteImageNode,
+  pasteImageNodes,
+  usePaste
+} from './usePaste'
 
 function createMockNode() {
   return {
@@ -100,7 +105,7 @@ describe('pasteImageNode', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(mockCanvas.graph!.add).mockImplementation(
-      (node: LGraphNode | LGraphGroup) => node as LGraphNode
+      (node: LGraphNode | LGraphGroup | null) => node as LGraphNode
     )
   })
 
@@ -230,7 +235,7 @@ describe('usePaste', () => {
     mockCanvas.current_node = null
     mockWorkspaceStore.shiftDown = false
     vi.mocked(mockCanvas.graph!.add).mockImplementation(
-      (node: LGraphNode | LGraphGroup) => node as LGraphNode
+      (node: LGraphNode | LGraphGroup | null) => node as LGraphNode
     )
   })
 
@@ -349,5 +354,64 @@ describe('usePaste', () => {
         expect.any(Object)
       )
     })
+  })
+})
+
+describe('cloneDataTransfer', () => {
+  it('should clone string data', () => {
+    const original = new DataTransfer()
+    original.setData('text/plain', 'test text')
+    original.setData('text/html', '<p>test html</p>')
+
+    const cloned = cloneDataTransfer(original)
+
+    expect(cloned.getData('text/plain')).toBe('test text')
+    expect(cloned.getData('text/html')).toBe('<p>test html</p>')
+  })
+
+  it('should clone files', () => {
+    const file1 = createImageFile('test1.png')
+    const file2 = createImageFile('test2.jpg', 'image/jpeg')
+    const original = createDataTransfer([file1, file2])
+
+    const cloned = cloneDataTransfer(original)
+
+    // Files are added from both .files and .items, causing duplicates
+    expect(cloned.files.length).toBeGreaterThanOrEqual(2)
+    expect(Array.from(cloned.files)).toContain(file1)
+    expect(Array.from(cloned.files)).toContain(file2)
+  })
+
+  it('should preserve dropEffect and effectAllowed', () => {
+    const original = new DataTransfer()
+    original.dropEffect = 'copy'
+    original.effectAllowed = 'copyMove'
+
+    const cloned = cloneDataTransfer(original)
+
+    expect(cloned.dropEffect).toBe('copy')
+    expect(cloned.effectAllowed).toBe('copyMove')
+  })
+
+  it('should handle empty DataTransfer', () => {
+    const original = new DataTransfer()
+
+    const cloned = cloneDataTransfer(original)
+
+    expect(cloned.types.length).toBe(0)
+    expect(cloned.files.length).toBe(0)
+  })
+
+  it('should clone both string data and files', () => {
+    const file = createImageFile()
+    const original = createDataTransfer([file])
+    original.setData('text/plain', 'test')
+
+    const cloned = cloneDataTransfer(original)
+
+    expect(cloned.getData('text/plain')).toBe('test')
+    // Files are added from both .files and .items
+    expect(cloned.files.length).toBeGreaterThanOrEqual(1)
+    expect(Array.from(cloned.files)).toContain(file)
   })
 })
