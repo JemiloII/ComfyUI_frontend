@@ -32,7 +32,7 @@ type VideoNode = LGraphNode & {
 }
 
 /**
- * Promisify Litegraph.createNode with ComfyUI
+ * Extract & Promisify Litegraph.createNode to allow for positioning
  * @param canvas
  * @param name
  */
@@ -45,10 +45,8 @@ export async function createNode(
   }
 
   const { graph, graph_mouse: [ posX, posY ] } = canvas
-  const newNode = await new Promise<LGraphNode | null>((resolve) => {
-    const createdNode = LiteGraph.createNode(name)
-    setTimeout(resolve, 0, createdNode)
-  })
+  const newNode = LiteGraph.createNode(name)
+  await new Promise(r => setTimeout(r, 0))
 
   if (newNode) {
     newNode!.pos = [ posX, posY ]

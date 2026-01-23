@@ -1527,7 +1527,7 @@ export class ComfyApp {
 
 
   /**
-   * Loads multiple files and connects to a batch node
+   * Loads multiple files, connects to a batch node, and selects them
    * @param {FileList} fileList
    */
   async handleFileList(fileList: FileList) {
@@ -1536,7 +1536,8 @@ export class ComfyApp {
       const batchImagesNode = await createNode(this.canvas, 'BatchImagesNode')
       if (!batchImagesNode) return
 
-      this.positionNodes(imageNodes, batchImagesNode)
+      this.positionBatchNodes(imageNodes, batchImagesNode)
+      this.canvas.selectItems([...imageNodes, batchImagesNode])
 
       Array.from(imageNodes).forEach((imageNode, index) => {
         imageNode.connect(0, batchImagesNode, index)
@@ -1549,13 +1550,19 @@ export class ComfyApp {
    * @param nodes
    * @param batchNode
    */
-  positionNodes(nodes: LGraphNode[], batchNode: LGraphNode) {
-    const [x, y, width, height] = nodes[0].getBounding()
+  positionBatchNodes(nodes: LGraphNode[], batchNode: LGraphNode): void {
+    const [x, y, width, nodeHeight] = nodes[0].getBounding()
     batchNode.pos = [ x + width + 100, y + 30 ]
+
+    // Retrieving Node Height is inconsistent
+    let height = nodeHeight;
+    if (nodes[0].type === 'LoadImage') {
+      height = Math.max(344, nodeHeight)
+    }
 
     nodes.forEach((node, index) => {
       if (index > 0) {
-        node.pos = [ x, y + (height * index) + (25 * (index + 1))];
+        node.pos = [ x, y + (height * index) + (25 * (index + 1)) ]
       }
       this.canvas.graph?.change()
     });
