@@ -4,11 +4,15 @@ export async function extractFileFromDragEvent(
   if (!event.dataTransfer) return
 
   const { files } = event.dataTransfer
+  const { length } = files
   // Dragging from Chrome->Firefox there is a file, but it's a bmp, so ignore it
-  if (files.length === 1 && files[0].type !== 'image/bmp') {
+  if (length === 1 && files[0].type !== 'image/bmp') {
     return files[0]
-  } else if (files.length > 1 && Array.from(files).every(hasImageType)) {
-    return files
+  } else if (length > 1) {
+    const items: File[] = Array.from(files)
+    if (items.every(isType('image')) || items.every(isType('text/plain'))) {
+      return files
+    }
   }
 
   // Try loading the first URI in the transfer list
@@ -26,6 +30,8 @@ export async function extractFileFromDragEvent(
   return new File([blob], uri, { type: blob.type })
 }
 
-function hasImageType({ type }: File): boolean {
-  return type.startsWith('image')
+function isType(memeType: string) {
+  return ({ type }: File): boolean => {
+    return type.startsWith(memeType)
+  }
 }

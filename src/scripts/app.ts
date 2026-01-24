@@ -1542,6 +1542,22 @@ export class ComfyApp {
         imageNode.connect(0, batchImagesNode, index)
       })
     }
+
+    if (fileList[0].type === 'text/plain') {
+      const textNodes: LGraphNode[] = []
+
+      for (let file of fileList) {
+        const name = 'PrimitiveStringMultiline'
+        const textNode = await createNode(this.canvas, name)
+        if (!textNode) return
+
+        textNode.widgets![0].value = await file.text()
+        textNodes.push(textNode)
+      }
+
+      this.positionBatchNodes(textNodes)
+      this.canvas.selectItems(textNodes)
+    }
   }
 
   /**
@@ -1549,9 +1565,11 @@ export class ComfyApp {
    * @param nodes
    * @param batchNode
    */
-  positionBatchNodes(nodes: LGraphNode[], batchNode: LGraphNode): void {
+  positionBatchNodes(nodes: LGraphNode[], batchNode?: LGraphNode): void {
     const [x, y, width, nodeHeight] = nodes[0].getBounding()
-    batchNode.pos = [ x + width + 100, y + 30 ]
+    if (batchNode) {
+      batchNode.pos = [ x + width + 100, y + 30 ]
+    }
 
     // Retrieving Node Height is inconsistent
     let height = nodeHeight;
