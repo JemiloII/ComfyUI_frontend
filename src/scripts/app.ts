@@ -163,7 +163,7 @@ export class ComfyApp {
 
   // TODO: Migrate internal usage to the
   /** @deprecated Use {@link rootGraph} instead */
-  get graph(): LGraph | undefined {
+  get graph() {
     return this.rootGraphInternal!
   }
 
