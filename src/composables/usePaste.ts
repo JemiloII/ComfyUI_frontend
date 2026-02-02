@@ -14,11 +14,10 @@ import {
 } from '@/utils/litegraphUtil'
 import { shouldIgnoreCopyPaste } from '@/workbench/eventHelpers'
 
-const SUPPORTED_TEXT_EXTENSIONS = ['txt', 'md', 'yaml', 'yml', 'xml', 'json', 'toml']
-
 export function isSupportedTextFile(file: File): boolean {
+  const supportedExtensions = ['txt', 'md', 'yaml', 'yml', 'xml', 'json', 'toml']
   const extension = file.name.split('.').pop()?.toLowerCase()
-  return extension ? SUPPORTED_TEXT_EXTENSIONS.includes(extension) : false
+  return extension ? supportedExtensions.includes(extension) : false
 }
 
 export function cloneDataTransfer(original: DataTransfer): DataTransfer {
