@@ -8,9 +8,11 @@ import type {
 import { ComfyApp } from './app'
 import { createNode } from '@/utils/litegraphUtil'
 import {
+  isSupportedTextFile,
   pasteImageNode,
   pasteImageNodes,
-  pasteTextNodes
+  pasteTextNodes,
+  positionBatchNodes
 } from '@/composables/usePaste'
 
 vi.mock('@/utils/litegraphUtil', () => ({
@@ -23,8 +25,11 @@ vi.mock('@/utils/litegraphUtil', () => ({
 }))
 
 vi.mock('@/composables/usePaste', () => ({
+  isSupportedTextFile: vi.fn(),
   pasteImageNode: vi.fn(),
-  pasteImageNodes: vi.fn()
+  pasteImageNodes: vi.fn(),
+  pasteTextNodes: vi.fn(),
+  positionBatchNodes: vi.fn()
 }))
 
 vi.mock('@/scripts/metadata/parser', () => ({
@@ -133,83 +138,33 @@ describe('ComfyApp', () => {
       await expect(app.handleFileList(dataTransfer.files)).rejects.toThrow()
     })
 
-    it('should not process non-image files', async () => {
-      const textFile = new File([''], 'test.txt', { type: 'text/plain' })
+    it('should process supported text files', async () => {
+      const mockTextNode = createMockNode({ id: 1, type: 'PrimitiveStringMultiline' })
+      vi.mocked(isSupportedTextFile).mockReturnValue(true)
+      vi.mocked(pasteTextNodes).mockResolvedValue([mockTextNode])
+
+      const textFile = new File(['test content'], 'test.txt', { type: 'text/plain' })
       const dataTransfer = new DataTransfer()
       dataTransfer.items.add(textFile)
 
       await app.handleFileList(dataTransfer.files)
 
+      expect(pasteTextNodes).toHaveBeenCalledWith(mockCanvas, dataTransfer.files)
+      expect(positionBatchNodes).toHaveBeenCalledWith(mockCanvas, [mockTextNode])
+      expect(mockCanvas.selectItems).toHaveBeenCalledWith([mockTextNode])
+    })
+
+    it('should not process unsupported text files', async () => {
+      vi.mocked(isSupportedTextFile).mockReturnValue(false)
+
+      const unsupportedFile = new File([''], 'test.exe', { type: 'application/octet-stream' })
+      const dataTransfer = new DataTransfer()
+      dataTransfer.items.add(unsupportedFile)
+
+      await app.handleFileList(dataTransfer.files)
+
       expect(pasteImageNodes).not.toHaveBeenCalled()
-      expect(createNode).not.toHaveBeenCalled()
-    })
-  })
-
-  describe('positionBatchNodes', () => {
-    it('should position batch node to the right of first node', () => {
-      const mockNode1 = createMockNode({
-        pos: [100, 200],
-        getBounding: vi.fn(() => new Float64Array([100, 200, 300, 400]))
-      })
-      const mockBatchNode = createMockNode({ pos: [0, 0] })
-
-      app.positionBatchNodes([mockNode1], mockBatchNode)
-
-      expect(mockBatchNode.pos).toEqual([500, 230])
-    })
-
-    it('should stack multiple image nodes vertically', () => {
-      const mockNode1 = createMockNode({
-        pos: [100, 200],
-        type: 'LoadImage',
-        getBounding: vi.fn(() => new Float64Array([100, 200, 300, 400]))
-      })
-      const mockNode2 = createMockNode({ pos: [0, 0], type: 'LoadImage' })
-      const mockNode3 = createMockNode({ pos: [0, 0], type: 'LoadImage' })
-      const mockBatchNode = createMockNode({ pos: [0, 0] })
-
-      app.positionBatchNodes([mockNode1, mockNode2, mockNode3], mockBatchNode)
-
-      // Formula: y + (height * index) + (25 * (index + 1))
-      // For LoadImage nodes, height = 344
-      expect(mockNode1.pos).toEqual([100, 200])
-      // index 1: 200 + (344 * 1) + (25 * 2) = 200 + 344 + 50 = 594
-      expect(mockNode2.pos).toEqual([100, 594])
-      // index 2: 200 + (344 * 2) + (25 * 3) = 200 + 688 + 75 = 963
-      expect(mockNode3.pos).toEqual([100, 963])
-    })
-
-    it('should use set height of 344 for LoadImage nodes', () => {
-      const mockNode1 = createMockNode({
-        pos: [100, 200],
-        type: 'LoadImage',
-        getBounding: vi.fn(() => new Float64Array([100, 200, 300, 100]))
-      })
-      const mockNode2 = createMockNode({
-        pos: [0, 0],
-        type: 'LoadImage'
-      })
-      const mockBatchNode = createMockNode({ pos: [0, 0] })
-
-      app.positionBatchNodes([mockNode1, mockNode2], mockBatchNode)
-
-      // height = max(344, 100) = 344
-      // index 1: 200 + (344 * 1) + (25 * 2) = 200 + 344 + 50 = 594
-      expect(mockNode2.pos).toEqual([100, 594])
-    })
-
-    it('should call graph change once for all nodes', () => {
-      const mockNode1 = createMockNode({
-        getBounding: vi.fn(() => new Float64Array([100, 200, 300, 400]))
-      })
-      const mockNode2 = createMockNode()
-      const mockNode3 = createMockNode()
-      const mockBatchNode = createMockNode()
-
-      app.positionBatchNodes([mockNode1, mockNode2, mockNode3], mockBatchNode)
-
-      // graph.change() is called for each node in the forEach
-      expect(mockCanvas.graph?.change).toHaveBeenCalledTimes(1)
+      expect(pasteTextNodes).not.toHaveBeenCalled()
     })
   })
 
@@ -244,11 +199,14 @@ describe('ComfyApp', () => {
       vi.mocked(getWorkflowDataFromFile).mockResolvedValue({})
       vi.mocked(useToastStore).mockReturnValue({
         addAlert: mockAddAlert
-      } as ReturnType<typeof useToastStore>)
+      } as unknown as ReturnType<typeof useToastStore>)
+      vi.mocked(isSupportedTextFile).mockReturnValue(false)
 
-      const textFile = new File([''], 'test.txt', { type: 'text/plain' })
+      const unsupportedFile = new File([''], 'test.exe', {
+        type: 'application/octet-stream'
+      })
 
-      await app.handleFile(textFile)
+      await app.handleFile(unsupportedFile)
 
       expect(mockAddAlert).toHaveBeenCalled()
     })

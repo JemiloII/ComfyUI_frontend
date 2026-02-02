@@ -102,9 +102,11 @@ import { ensureCorrectLayoutScale } from '@/renderer/extensions/vueNodes/layout/
 import { extractFileFromDragEvent } from '@/utils/eventUtils'
 import { getWorkflowDataFromFile } from '@/scripts/metadata/parser'
 import {
+  isSupportedTextFile,
   pasteImageNode,
   pasteImageNodes,
-  pasteTextNodes
+  pasteTextNodes,
+  positionBatchNodes
 } from '@/composables/usePaste'
 
 export const ANIM_PREVIEW_WIDGET = '$$comfy_animation_preview'
@@ -1467,7 +1469,7 @@ export class ComfyApp {
         return
       }
 
-      if (file.type.startsWith('text')) {
+      if (isSupportedTextFile(file)) {
         const name = 'PrimitiveStringMultiline'
         const textNode = await createNode(this.canvas, name)
         if (!textNode) return
@@ -1562,7 +1564,7 @@ export class ComfyApp {
       const batchImagesNode = await createNode(this.canvas, 'BatchImagesNode')
       if (!batchImagesNode) return
 
-      this.positionBatchNodes(imageNodes, batchImagesNode)
+      positionBatchNodes(this.canvas, imageNodes, batchImagesNode)
       this.canvas.selectItems([...imageNodes, batchImagesNode])
 
       Array.from(imageNodes).forEach((imageNode, index) => {
@@ -1570,37 +1572,13 @@ export class ComfyApp {
       })
     }
 
-    if (fileList[0].type === 'text/plain') {
+    if (isSupportedTextFile(fileList[0])) {
       const textNodes = await pasteTextNodes(this.canvas, fileList)
-      this.positionBatchNodes(textNodes)
-      this.canvas.selectItems(textNodes)
-    }
-  }
-
-  /**
-   * Positions batched nodes in drag and drop
-   * @param nodes
-   * @param batchNode
-   */
-  positionBatchNodes(nodes: LGraphNode[], batchNode?: LGraphNode): void {
-    const [x, y, width] = nodes[0].getBounding()
-    if (batchNode) {
-      batchNode.pos = [ x + width + 100, y + 30 ]
-    }
-
-    // Retrieving Node Height is inconsistent
-    let height = 0;
-    if (nodes[0].type === 'LoadImage') {
-      height = 344
-    }
-
-    nodes.forEach((node, index) => {
-      if (index > 0) {
-        node.pos = [ x, y + (height * index) + (25 * (index + 1)) ]
+      if (textNodes.length > 0) {
+        positionBatchNodes(this.canvas, textNodes)
+        this.canvas.selectItems(textNodes)
       }
-    });
-
-    this.canvas.graph?.change()
+    }
   }
 
   // @deprecated

@@ -12,6 +12,7 @@ import {
   cloneDataTransfer,
   pasteImageNode,
   pasteImageNodes,
+  positionBatchNodes,
   usePaste
 } from './usePaste'
 
@@ -413,5 +414,90 @@ describe('cloneDataTransfer', () => {
     // Files are added from both .files and .items
     expect(cloned.files.length).toBeGreaterThanOrEqual(1)
     expect(Array.from(cloned.files)).toContain(file)
+  })
+})
+
+function createMockNodeWithBounding(
+  options: Record<string, unknown> = {}
+): LGraphNode {
+  return {
+    id: 1,
+    pos: [0, 0],
+    size: [200, 100],
+    type: 'LoadImage',
+    connect: vi.fn(),
+    getBounding: vi.fn(() => new Float64Array([0, 0, 200, 100])),
+    ...options
+  } as unknown as LGraphNode
+}
+
+describe('positionBatchNodes', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('should position batch node to the right of first node', () => {
+    const mockNode1 = createMockNodeWithBounding({
+      pos: [100, 200],
+      getBounding: vi.fn(() => new Float64Array([100, 200, 300, 400]))
+    })
+    const mockBatchNode = createMockNodeWithBounding({ pos: [0, 0] })
+
+    positionBatchNodes(mockCanvas, [mockNode1], mockBatchNode)
+
+    expect(mockBatchNode.pos).toEqual([500, 230])
+  })
+
+  it('should stack multiple image nodes vertically', () => {
+    const mockNode1 = createMockNodeWithBounding({
+      pos: [100, 200],
+      type: 'LoadImage',
+      getBounding: vi.fn(() => new Float64Array([100, 200, 300, 400]))
+    })
+    const mockNode2 = createMockNodeWithBounding({ pos: [0, 0], type: 'LoadImage' })
+    const mockNode3 = createMockNodeWithBounding({ pos: [0, 0], type: 'LoadImage' })
+    const mockBatchNode = createMockNodeWithBounding({ pos: [0, 0] })
+
+    positionBatchNodes(mockCanvas, [mockNode1, mockNode2, mockNode3], mockBatchNode)
+
+    // Formula: y + (height * index) + (25 * (index + 1))
+    // For LoadImage nodes, height = 344
+    expect(mockNode1.pos).toEqual([100, 200])
+    // index 1: 200 + (344 * 1) + (25 * 2) = 200 + 344 + 50 = 594
+    expect(mockNode2.pos).toEqual([100, 594])
+    // index 2: 200 + (344 * 2) + (25 * 3) = 200 + 688 + 75 = 963
+    expect(mockNode3.pos).toEqual([100, 963])
+  })
+
+  it('should use set height of 344 for LoadImage nodes', () => {
+    const mockNode1 = createMockNodeWithBounding({
+      pos: [100, 200],
+      type: 'LoadImage',
+      getBounding: vi.fn(() => new Float64Array([100, 200, 300, 100]))
+    })
+    const mockNode2 = createMockNodeWithBounding({
+      pos: [0, 0],
+      type: 'LoadImage'
+    })
+    const mockBatchNode = createMockNodeWithBounding({ pos: [0, 0] })
+
+    positionBatchNodes(mockCanvas, [mockNode1, mockNode2], mockBatchNode)
+
+    // height = 344 for LoadImage nodes
+    // index 1: 200 + (344 * 1) + (25 * 2) = 200 + 344 + 50 = 594
+    expect(mockNode2.pos).toEqual([100, 594])
+  })
+
+  it('should call graph change once for all nodes', () => {
+    const mockNode1 = createMockNodeWithBounding({
+      getBounding: vi.fn(() => new Float64Array([100, 200, 300, 400]))
+    })
+    const mockNode2 = createMockNodeWithBounding()
+    const mockNode3 = createMockNodeWithBounding()
+    const mockBatchNode = createMockNodeWithBounding()
+
+    positionBatchNodes(mockCanvas, [mockNode1, mockNode2, mockNode3], mockBatchNode)
+
+    expect(mockCanvas.graph?.change).toHaveBeenCalledTimes(1)
   })
 })

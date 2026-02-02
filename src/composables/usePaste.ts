@@ -14,6 +14,13 @@ import {
 } from '@/utils/litegraphUtil'
 import { shouldIgnoreCopyPaste } from '@/workbench/eventHelpers'
 
+const SUPPORTED_TEXT_EXTENSIONS = ['txt', 'md', 'yaml', 'yml', 'xml', 'json', 'toml']
+
+export function isSupportedTextFile(file: File): boolean {
+  const extension = file.name.split('.').pop()?.toLowerCase()
+  return extension ? SUPPORTED_TEXT_EXTENSIONS.includes(extension) : false
+}
+
 export function cloneDataTransfer(original: DataTransfer): DataTransfer {
   const persistent = new DataTransfer()
 
@@ -118,8 +125,9 @@ export async function pasteTextNodes(
   fileList: FileList
 ): Promise<LGraphNode[]> {
   const textNodes: LGraphNode[] = []
+  const supportedFiles = Array.from(fileList).filter(isSupportedTextFile)
 
-  for (const file of fileList) {
+  for (const file of supportedFiles) {
     const name = 'PrimitiveStringMultiline'
     const textNode = await createNode(canvas, name)
     if (textNode) {
@@ -142,9 +150,12 @@ export function positionBatchNodes(
   nodes: LGraphNode[],
   batchNode?: LGraphNode
 ): void {
-  const [ x, y, width ] = nodes[0].getBounding()
+  const graph = canvas.graph
+  if (!nodes.length || !graph) return
+
+  const [x, y, width] = nodes[0].getBounding()
   if (batchNode) {
-    batchNode.pos = [ x + width + 100, y + 30 ]
+    batchNode.pos = [x + width + 100, y + 30]
   }
 
   let height = 0
@@ -154,11 +165,11 @@ export function positionBatchNodes(
 
   nodes.forEach((node, index) => {
     if (index > 0) {
-      node.pos = [ x, y + (height * index) + (25 * (index + 1)) ]
+      node.pos = [x, y + (height * index) + (25 * (index + 1))]
     }
   })
 
-  canvas.graph?.change()
+  graph.change()
 }
 
 /**
@@ -227,11 +238,16 @@ export const usePaste = () => {
         }
         pasteItemsOnNode(items, audioNode, 'audio')
         return
-      } else if (item.type.startsWith('text')) {
-        const textNodes = await pasteTextNodes(canvas as LGraphCanvas, files)
-        positionBatchNodes(canvas as LGraphCanvas, textNodes)
-        canvas.selectItems(textNodes)
-        return
+      } else if (item.kind === 'file') {
+        const file = item.getAsFile()
+        if (file && isSupportedTextFile(file)) {
+          const textNodes = await pasteTextNodes(canvas as LGraphCanvas, files)
+          if (textNodes.length > 0) {
+            positionBatchNodes(canvas as LGraphCanvas, textNodes)
+            canvas.selectItems(textNodes)
+            return
+          }
+        }
       }
     }
     if (pasteClipboardItems(data)) return
