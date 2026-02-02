@@ -98,7 +98,11 @@ import { type ComfyWidgetConstructor } from './widgets'
 import { ensureCorrectLayoutScale } from '@/renderer/extensions/vueNodes/layout/ensureCorrectLayoutScale'
 import { extractFileFromDragEvent } from '@/utils/eventUtils'
 import { getWorkflowDataFromFile } from '@/scripts/metadata/parser'
-import { pasteImageNode, pasteImageNodes } from '@/composables/usePaste'
+import {
+  pasteImageNode,
+  pasteImageNodes,
+  pasteTextNodes
+} from '@/composables/usePaste'
 
 export const ANIM_PREVIEW_WIDGET = '$$comfy_animation_preview'
 
@@ -1450,6 +1454,15 @@ export class ComfyApp {
         return
       }
 
+      if (file.type.startsWith('text')) {
+        const name = 'PrimitiveStringMultiline'
+        const textNode = await createNode(this.canvas, name)
+        if (!textNode) return
+
+        textNode.widgets![0].value = await file.text()
+        return
+      }
+
       this.showErrorOnFileLoad(file)
       return
     }
@@ -1545,17 +1558,7 @@ export class ComfyApp {
     }
 
     if (fileList[0].type === 'text/plain') {
-      const textNodes: LGraphNode[] = []
-
-      for (let file of fileList) {
-        const name = 'PrimitiveStringMultiline'
-        const textNode = await createNode(this.canvas, name)
-        if (!textNode) return
-
-        textNode.widgets![0].value = await file.text()
-        textNodes.push(textNode)
-      }
-
+      const textNodes = await pasteTextNodes(this.canvas, fileList)
       this.positionBatchNodes(textNodes)
       this.canvas.selectItems(textNodes)
     }

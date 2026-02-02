@@ -7,7 +7,11 @@ import type {
 } from '@/lib/litegraph/src/litegraph'
 import { ComfyApp } from './app'
 import { createNode } from '@/utils/litegraphUtil'
-import { pasteImageNode, pasteImageNodes } from '@/composables/usePaste'
+import {
+  pasteImageNode,
+  pasteImageNodes,
+  pasteTextNodes
+} from '@/composables/usePaste'
 
 vi.mock('@/utils/litegraphUtil', () => ({
   createNode: vi.fn(),
@@ -160,14 +164,8 @@ describe('ComfyApp', () => {
         type: 'LoadImage',
         getBounding: vi.fn(() => new Float64Array([100, 200, 300, 400]))
       })
-      const mockNode2 = createMockNode({
-        pos: [0, 0],
-        type: 'LoadImage'
-      })
-      const mockNode3 = createMockNode({
-        pos: [0, 0],
-        type: 'LoadImage'
-      })
+      const mockNode2 = createMockNode({ pos: [0, 0], type: 'LoadImage' })
+      const mockNode3 = createMockNode({ pos: [0, 0], type: 'LoadImage' })
       const mockBatchNode = createMockNode({ pos: [0, 0] })
 
       app.positionBatchNodes([mockNode1, mockNode2, mockNode3], mockBatchNode)
@@ -265,7 +263,7 @@ describe('ComfyApp', () => {
       vi.mocked(getWorkflowDataFromFile).mockResolvedValue({})
       vi.mocked(useToastStore).mockReturnValue({
         addAlert: mockAddAlert
-      } as unknown as ReturnType<typeof useToastStore>)
+      } as ReturnType<typeof useToastStore>)
 
       const textFile = new File([''], 'test.txt', { type: 'text/plain' })
 

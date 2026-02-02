@@ -113,6 +113,55 @@ export async function pasteImageNodes(
   return nodes
 }
 
+export async function pasteTextNodes(
+  canvas: LGraphCanvas,
+  fileList: FileList
+): Promise<LGraphNode[]> {
+  const textNodes: LGraphNode[] = []
+
+  for (const file of fileList) {
+    const name = 'PrimitiveStringMultiline'
+    const textNode = await createNode(canvas, name)
+    if (textNode) {
+      textNode.widgets![0].value = await file.text()
+      textNodes.push(textNode)
+    }
+  }
+
+  return textNodes
+}
+
+/**
+ * Positions batched nodes in drag and drop / paste
+ * @param canvas
+ * @param nodes
+ * @param batchNode
+ */
+export function positionBatchNodes(
+  canvas: LGraphCanvas,
+  nodes: LGraphNode[],
+  batchNode?: LGraphNode
+): void {
+  const [ x, y, width, nodeHeight ] = nodes[0].getBounding()
+  if (batchNode) {
+    batchNode.pos = [ x + width + 100, y + 30 ]
+  }
+
+  // Retrieving Node Height is inconsistent
+  let height = nodeHeight
+  if (nodes[0].type === 'LoadImage') {
+    height = Math.max(344, nodeHeight)
+  }
+
+  nodes.forEach((node, index) => {
+    if (index > 0) {
+      node.pos = [ x, y + (height * index) + (25 * (index + 1)) ]
+    }
+  })
+
+  canvas.graph?.change()
+}
+
 /**
  * Adds a handler on paste that extracts and loads images or workflows from pasted JSON data
  */
@@ -137,7 +186,7 @@ export const usePaste = () => {
     if (!data) throw new Error('No clipboard data on clipboard event')
     data = cloneDataTransfer(data)
 
-    const { items } = data
+    const { items, files } = data
 
     const currentNode = canvas.current_node as LGraphNode
     const isNodeSelected = currentNode?.is_selected
@@ -178,6 +227,11 @@ export const usePaste = () => {
           graph?.change()
         }
         pasteItemsOnNode(items, audioNode, 'audio')
+        return
+      } else if (item.type.startsWith('text')) {
+        const textNodes = await pasteTextNodes(canvas as LGraphCanvas, files)
+        positionBatchNodes(canvas as LGraphCanvas, textNodes)
+        canvas.selectItems(textNodes)
         return
       }
     }
