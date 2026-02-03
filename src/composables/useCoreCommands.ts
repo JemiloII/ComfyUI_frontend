@@ -67,10 +67,9 @@ import { useWorkflowTemplateSelectorDialog } from './useWorkflowTemplateSelector
 import { useMaskEditorStore } from '@/stores/maskEditorStore'
 import { useDialogStore } from '@/stores/dialogStore'
 
-const { isActiveSubscription, showSubscriptionDialog } = useSubscription()
-
 const moveSelectedNodesVersionAdded = '1.22.2'
 export function useCoreCommands(): ComfyCommand[] {
+  const { isActiveSubscription, showSubscriptionDialog } = useSubscription()
   const workflowService = useWorkflowService()
   const workflowStore = useWorkflowStore()
   const dialogService = useDialogService()
@@ -581,7 +580,7 @@ export function useCoreCommands(): ComfyCommand[] {
       versionAdded: '1.3.7',
       category: 'view-controls' as const,
       function: () => {
-        dialogService.showSettingsDialog()
+        void dialogService.showSettingsDialog()
       }
     },
     {
@@ -830,7 +829,7 @@ export function useCoreCommands(): ComfyCommand[] {
       menubarLabel: 'About ComfyUI',
       versionAdded: '1.6.4',
       function: () => {
-        dialogService.showSettingsDialog('about')
+        void dialogService.showSettingsDialog('about')
       }
     },
     {
@@ -863,7 +862,7 @@ export function useCoreCommands(): ComfyCommand[] {
           userEmail: userEmail.value,
           userId: resolvedUserInfo.value?.id
         })
-        window.open(supportUrl, '_blank')
+        window.open(supportUrl, '_blank', 'noopener,noreferrer')
       }
     },
     {

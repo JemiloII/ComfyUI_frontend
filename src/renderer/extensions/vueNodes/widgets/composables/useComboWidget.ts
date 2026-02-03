@@ -13,6 +13,7 @@ import {
   assetFilenameSchema,
   assetItemSchema
 } from '@/platform/assets/schemas/assetSchema'
+import { getAssetFilename } from '@/platform/assets/utils/assetMetadataUtils'
 import { assetService } from '@/platform/assets/services/assetService'
 import { isCloud } from '@/platform/distribution/types'
 import { useSettingStore } from '@/platform/settings/settingStore'
@@ -73,10 +74,14 @@ const addMultiSelectWidget = (
   // TODO: Add remote support to multi-select widget
   // https://github.com/Comfy-Org/ComfyUI_frontend/issues/3003
   if (inputSpec.control_after_generate) {
+    const defaultType =
+      typeof inputSpec.control_after_generate === 'string'
+        ? inputSpec.control_after_generate
+        : 'fixed'
     widget.linkedWidgets = addValueControlWidgets(
       node,
       widget,
-      'fixed',
+      defaultType,
       undefined,
       transformInputSpecV2ToV1(inputSpec)
     )
@@ -115,7 +120,7 @@ const createAssetBrowserWidget = (
           return
         }
 
-        const filename = validatedAsset.data.user_metadata?.filename
+        const filename = getAssetFilename(validatedAsset.data)
         const validatedFilename = assetFilenameSchema.safeParse(filename)
 
         if (!validatedFilename.success) {
@@ -208,10 +213,14 @@ const createInputMappingWidget = (
     if (!isComboWidget(widget)) {
       throw new Error(`Expected combo widget but received ${widget.type}`)
     }
+    const defaultType =
+      typeof inputSpec.control_after_generate === 'string'
+        ? inputSpec.control_after_generate
+        : 'randomize'
     widget.linkedWidgets = addValueControlWidgets(
       node,
       widget,
-      undefined,
+      defaultType,
       undefined,
       transformInputSpecV2ToV1(inputSpec)
     )
@@ -283,10 +292,14 @@ const addComboWidget = (
       throw new Error(`Expected combo widget but received ${widget.type}`)
     }
 
+    const defaultType =
+      typeof inputSpec.control_after_generate === 'string'
+        ? inputSpec.control_after_generate
+        : 'randomize'
     widget.linkedWidgets = addValueControlWidgets(
       node,
       widget,
-      undefined,
+      defaultType,
       undefined,
       transformInputSpecV2ToV1(inputSpec)
     )

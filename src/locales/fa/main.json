@@ -22,6 +22,7 @@
     },
     "assetCollection": "مجموعه دارایی‌ها",
     "assets": "دارایی‌ها",
+    "baseModel": "مدل پایه",
     "baseModels": "مدل‌های پایه",
     "browseAssets": "مرور دارایی‌ها",
     "byType": "بر اساس نوع",
@@ -87,6 +88,7 @@
       "descriptionNotSet": "توضیحی تنظیم نشده است",
       "descriptionPlaceholder": "یک توضیح برای این مدل اضافه کنید...",
       "displayName": "نام نمایشی",
+      "editDisplayName": "ویرایش نام نمایشی",
       "fileName": "نام فایل",
       "modelDescription": "توضیحات مدل",
       "modelTagging": "برچسب‌گذاری مدل",
@@ -106,6 +108,7 @@
     "modelUploaded": "مدل با موفقیت وارد شد.",
     "noAssetsFound": "هیچ دارایی‌ای یافت نشد",
     "noModelsInFolder": "هیچ {type} در این پوشه موجود نیست",
+    "noResultsCanImport": "جستجو یا فیلترهای خود را تغییر دهید.\nهمچنین می‌توانید مدل‌ها را با استفاده از دکمه «وارد کردن» در بالا اضافه کنید.",
     "noValidSourceDetected": "هیچ منبع واردات معتبری شناسایی نشد",
     "notSureLeaveAsIs": "مطمئن نیستید؟ همین را باقی بگذارید",
     "onlyCivitaiUrlsSupported": "فقط URLهای Civitai پشتیبانی می‌شوند",
@@ -125,6 +128,7 @@
     "selectProjects": "پروژه‌ها را انتخاب کنید",
     "sortAZ": "الف-ی",
     "sortBy": "مرتب‌سازی بر اساس",
+    "sortDefault": "پیش‌فرض",
     "sortPopular": "محبوب",
     "sortRecent": "جدیدترین",
     "sortZA": "ی-الف",
@@ -175,13 +179,7 @@
       "whitelistInfo": "درباره سایت‌های غیرمجاز"
     },
     "deleteAccount": {
-      "cancel": "انصراف",
-      "confirm": "حذف حساب کاربری",
-      "confirmMessage": "آیا مطمئن هستید که می‌خواهید حساب کاربری خود را حذف کنید؟ این عملیات غیرقابل بازگشت است و تمام داده‌های شما به طور دائمی حذف خواهد شد.",
-      "confirmTitle": "حذف حساب کاربری",
-      "deleteAccount": "حذف حساب کاربری",
-      "success": "حساب کاربری حذف شد",
-      "successDetail": "حساب کاربری شما با موفقیت حذف شد."
+      "contactSupport": "برای حذف حساب کاربری خود، لطفاً با {email} تماس بگیرید."
     },
     "errors": {
       "auth/cancelled-popup-request": "ورود لغو شد. لطفاً دوباره تلاش کنید.",
@@ -576,6 +574,7 @@
     "CLIP": "clip",
     "CLIP_VISION": "بینایی clip",
     "CLIP_VISION_OUTPUT": "خروجی بینایی clip",
+    "COLOR": "رنگ",
     "COMBO": "ترکیبی",
     "COMFY_AUTOGROW_V3": "Comfy AutoGrow V3",
     "COMFY_DYNAMICCOMBO_V3": "Comfy DynamicCombo V3",
@@ -730,6 +729,7 @@
     "control_before_generate": "کنترل پیش از تولید",
     "copied": "کپی شد",
     "copy": "کپی",
+    "copyAll": "کپی همه",
     "copyJobId": "کپی شناسه وظیفه",
     "copyToClipboard": "کپی در کلیپ‌بورد",
     "copyURL": "کپی آدرس",
@@ -746,6 +746,7 @@
     "deleteImage": "حذف تصویر",
     "deprecated": "منسوخ",
     "description": "توضیحات",
+    "devOnly": "فقط برای توسعه‌دهندگان",
     "devices": "دستگاه‌ها",
     "disableAll": "غیرفعال‌سازی همه",
     "disableSelected": "غیرفعال‌سازی انتخاب‌شده‌ها",
@@ -958,11 +959,10 @@
     "videoPreview": "پیش‌نمایش ویدیو - برای جابجایی بین ویدیوها از کلیدهای جهت‌دار استفاده کنید",
     "viewImageOfTotal": "مشاهده تصویر {index} از {total}",
     "viewVideoOfTotal": "مشاهده ویدیو {index} از {total}",
-    "vitePreloadErrorMessage": "نسخه جدیدی از برنامه منتشر شده است. آیا مایل به بارگذاری مجدد هستید؟\nدر غیر این صورت، برخی بخش‌های برنامه ممکن است به درستی کار نکنند.\nمی‌توانید رد کنید و قبل از بارگذاری مجدد، پیشرفت خود را ذخیره کنید.",
-    "vitePreloadErrorTitle": "نسخه جدید موجود است",
     "volume": "حجم صدا",
     "warning": "هشدار",
-    "workflow": "workflow"
+    "workflow": "workflow",
+    "you": "شما"
   },
   "graphCanvasMenu": {
     "fitView": "تطبیق با نما",
@@ -1259,8 +1259,10 @@
     }
   },
   "manager": {
+    "actions": "اقدامات",
     "allMissingNodesInstalled": "همه نودهای مفقود با موفقیت نصب شدند",
     "applyChanges": "اعمال تغییرات",
+    "basicInfo": "اطلاعات پایه",
     "changingVersion": "تغییر نسخه از {from} به {to}",
     "clickToFinishSetup": "کلیک کنید",
     "conflicts": {
@@ -1296,6 +1298,28 @@
     "disabledNodesWontUpdate": "نودهای غیرفعال به‌روزرسانی نخواهند شد",
     "discoverCommunityContent": "بسته‌های نود، افزونه‌ها و محتوای ساخته‌شده توسط جامعه را کشف کنید...",
     "downloads": "دانلودها",
+    "emptyState": {
+      "allInstalled": {
+        "message": "شما هنوز هیچ افزونه‌ای نصب نکرده‌اید.",
+        "title": "افزونه‌ای نصب نشده است"
+      },
+      "conflicting": {
+        "message": "تمام افزونه‌های شما سازگار هستند.",
+        "title": "تعارضی شناسایی نشد"
+      },
+      "missing": {
+        "message": "تمام nodeهای مورد نیاز نصب شده‌اند.",
+        "title": "node گمشده‌ای وجود ندارد"
+      },
+      "updateAvailable": {
+        "message": "تمام افزونه‌های شما به‌روز هستند.",
+        "title": "همه به‌روز هستند"
+      },
+      "workflow": {
+        "message": "این گردش‌کار از هیچ node افزونه‌ای استفاده نمی‌کند.",
+        "title": "افزونه‌ای در گردش‌کار وجود ندارد"
+      }
+    },
     "enablePackToChangeVersion": "برای تغییر نسخه، این بسته را فعال کنید",
     "errorConnecting": "خطا در اتصال به رجیستری نود Comfy.",
     "extensionsSuccessfullyInstalled": "افزونه(ها) با موفقیت نصب شدند و آماده استفاده هستند!",
@@ -1317,18 +1341,31 @@
     "installingDependencies": "در حال نصب وابستگی‌ها...",
     "lastUpdated": "آخرین به‌روزرسانی",
     "latestVersion": "آخرین نسخه",
+    "legacyManagerSearchTip": "دنبال ComfyUI-Manager هستید؟ می‌توانید رابط کاربری مدیر قدیمی را با اجرای ComfyUI و استفاده از پرچم --enable-manager-legacy-ui فعال کنید.",
     "legacyManagerUI": "استفاده از رابط کاربری قدیمی",
     "legacyManagerUIDescription": "برای استفاده از رابط کاربری قدیمی مدیریت، ComfyUI را با --enable-manager-legacy-ui اجرا کنید.",
     "legacyMenuNotAvailable": "منوی مدیریت قدیمی در دسترس نیست، به منوی جدید مدیریت منتقل می‌شود.",
     "license": "مجوز",
     "loadingVersions": "در حال بارگذاری نسخه‌ها...",
     "mixedSelectionMessage": "امکان انجام عملیات گروهی روی انتخاب ترکیبی وجود ندارد",
+    "nav": {
+      "allExtensions": "همه افزونه‌ها",
+      "allInWorkflow": "همه در: {workflowName}",
+      "allInstalled": "همه نصب شده‌ها",
+      "conflicting": "دارای تداخل",
+      "inWorkflowSection": "در Workflow",
+      "installedSection": "نصب شده",
+      "missingNodes": "Nodeهای مفقود",
+      "notInstalled": "نصب نشده",
+      "updatesAvailable": "به‌روزرسانی‌های موجود"
+    },
     "nightlyVersion": "نسخه nightly",
     "noDescription": "توضیحی موجود نیست",
     "noNodesFound": "نودی یافت نشد",
     "noNodesFoundDescription": "نودهای این بسته قابل تجزیه نبودند یا این بسته فقط یک افزونه فرانت‌اند است و نودی ندارد.",
     "noResultsFound": "نتیجه‌ای مطابق با جستجوی شما یافت نشد.",
     "nodePack": "بسته نود",
+    "nodePackInfo": "اطلاعات Node Pack",
     "notAvailable": "در دسترس نیست",
     "packsSelected": "بسته انتخاب شد",
     "repository": "مخزن",
@@ -1336,6 +1373,7 @@
     "restartingBackend": "در حال راه‌اندازی مجدد backend برای اعمال تغییرات...",
     "searchPlaceholder": "جستجو",
     "selectVersion": "انتخاب نسخه",
+    "selected": "انتخاب شده",
     "sort": {
       "created": "جدیدترین",
       "downloads": "محبوب‌ترین",
@@ -1668,10 +1706,12 @@
     "Bria": "Bria",
     "ByteDance": "ByteDance",
     "Gemini": "Gemini",
+    "Grok": "Grok",
     "Ideogram": "Ideogram",
     "Kling": "Kling",
     "LTXV": "LTXV",
     "Luma": "Luma",
+    "Magnific": "Magnific",
     "Meshy": "Meshy",
     "MiniMax": "MiniMax",
     "Moonvalley Marey": "Moonvalley Marey",
@@ -1682,6 +1722,7 @@
     "Runway": "Runway",
     "Sora": "Sora",
     "Stability AI": "Stability AI",
+    "Tencent": "Tencent",
     "Topaz": "Topaz",
     "Tripo": "Tripo",
     "Veo": "Veo",
@@ -1766,6 +1807,16 @@
     "render": "خطای رندر node",
     "slots": "خطای slotهای node",
     "widgets": "خطای widgetهای node"
+  },
+  "nodeFilters": {
+    "hideDeprecated": "مخفی کردن nodeهای منسوخ",
+    "hideDeprecatedDescription": "nodeهایی که به عنوان منسوخ علامت‌گذاری شده‌اند را مگر در صورت فعال‌سازی صریح، مخفی می‌کند.",
+    "hideDevOnly": "مخفی کردن nodeهای مخصوص توسعه‌دهنده",
+    "hideDevOnlyDescription": "nodeهایی که فقط مخصوص توسعه‌دهنده هستند را مگر در صورت فعال بودن حالت توسعه، مخفی می‌کند.",
+    "hideExperimental": "مخفی کردن nodeهای آزمایشی",
+    "hideExperimentalDescription": "nodeهایی که به عنوان آزمایشی علامت‌گذاری شده‌اند را مگر در صورت فعال‌سازی صریح، مخفی می‌کند.",
+    "hideSubgraph": "مخفی کردن nodeهای زیرگراف",
+    "hideSubgraphDescription": "به طور موقت nodeهای زیرگراف را از کتابخانه node و جستجو مخفی می‌کند."
   },
   "nodeHelpPage": {
     "documentationPage": "صفحه مستندات",
@@ -1897,6 +1948,7 @@
     },
     "groupSettings": "تنظیمات گروه",
     "groups": "گروه‌ها",
+    "hideAdvancedInputsButton": "مخفی کردن ورودی‌های پیشرفته",
     "hideInput": "مخفی کردن ورودی",
     "info": "اطلاعات",
     "inputs": "ورودی‌ها",
@@ -2129,6 +2181,7 @@
     "NodeLibrary": "کتابخانه Node",
     "Nodes 2_0": "Nodes 2.0",
     "Notification Preferences": "تنظیمات اعلان",
+    "Other": "سایر",
     "PLY": "PLY",
     "PlanCredits": "طرح و اعتبارات",
     "Pointer": "اشاره‌گر",
@@ -2148,7 +2201,8 @@
     "Vue Nodes": "Nodes 2.0",
     "VueNodes": "Nodes 2.0",
     "Window": "پنجره",
-    "Workflow": "Workflow"
+    "Workflow": "Workflow",
+    "Workspace": "محیط کاری"
   },
   "shape": {
     "CARD": "کارت",
@@ -2253,6 +2307,7 @@
       "filterBy": "فیلتر بر اساس",
       "filterCurrentWorkflow": "Workflow فعلی",
       "filterJobs": "فیلتر کارها",
+      "inlineTotalLabel": "کل",
       "interruptAll": "توقف همه کارهای در حال اجرا",
       "jobQueue": "صف کار",
       "jobsCompleted": "{count} کار تکمیل شد",
@@ -2299,6 +2354,7 @@
   },
   "subgraphStore": {
     "blueprintName": "نام زیرگراف",
+    "cannotDeleteGlobal": "امکان حذف blueprints نصب‌شده وجود ندارد",
     "confirmDelete": "این عمل باعث حذف دائمی بلوپرینت از کتابخانه شما می‌شود",
     "confirmDeleteTitle": "حذف بلوپرینت؟",
     "hidden": "پارامترهای مخفی / تو در تو",
@@ -2326,9 +2382,15 @@
     "beta": "بتا",
     "billedMonthly": "صورتحساب ماهانه",
     "billedYearly": "{total} صورتحساب سالانه",
+    "billingComingSoon": {
+      "message": "صورت‌حساب تیمی به‌زودی ارائه می‌شود. به‌زودی می‌توانید برای فضای کاری خود با قیمت هر نفر اشتراک تهیه کنید. برای به‌روزرسانی‌ها همراه ما باشید.",
+      "title": "به‌زودی"
+    },
+    "cancelSubscription": "لغو اشتراک",
     "changeTo": "تغییر به {plan}",
     "comfyCloud": "Comfy Cloud",
     "comfyCloudLogo": "لوگوی Comfy Cloud",
+    "contactOwnerToSubscribe": "برای فعال‌سازی اشتراک با مالک محیط کاری تماس بگیرید",
     "contactUs": "تماس با ما",
     "creditsRemainingThisMonth": "شامل شده (شارژ مجدد {date})",
     "creditsRemainingThisYear": "شامل شده (شارژ مجدد {date})",
@@ -2341,6 +2403,7 @@
     "haveQuestions": "سوالی دارید یا به دنبال راهکار سازمانی هستید؟",
     "invoiceHistory": "تاریخچه فاکتورها",
     "learnMore": "اطلاعات بیشتر",
+    "managePayment": "مدیریت پرداخت",
     "managePlan": "مدیریت طرح",
     "manageSubscription": "مدیریت اشتراک",
     "maxDuration": {
@@ -2376,6 +2439,7 @@
     "subscribeToComfyCloud": "اشتراک در Comfy Cloud",
     "subscribeToRun": "اشتراک",
     "subscribeToRunFull": "اشتراک برای اجرا",
+    "subscriptionRequiredMessage": "برای اجرای workflowها در Cloud، اشتراک لازم است.",
     "tierNameYearly": "{name} سالانه",
     "tiers": {
       "creator": {
@@ -2407,6 +2471,7 @@
     "viewMoreDetails": "مشاهده جزئیات بیشتر",
     "viewMoreDetailsPlans": "مشاهده جزئیات بیشتر درباره طرح‌ها و قیمت‌ها",
     "viewUsageHistory": "مشاهده تاریخچه استفاده",
+    "workspaceNotSubscribed": "این محیط کاری اشتراک فعال ندارد",
     "yearly": "سالانه",
     "yearlyCreditsLabel": "کل اعتبار سالانه",
     "yearlyDiscount": "٪۲۰ تخفیف",
@@ -2482,6 +2547,9 @@
     "useCaseFilter": "وظایف",
     "useCasesSelected": "{count} وظیفه"
   },
+  "templates": {
+    "logoProviderSeparator": " و "
+  },
   "toastMessages": {
     "cannotCreateSubgraph": "امکان ایجاد subgraph وجود ندارد",
     "couldNotDetermineFileType": "نوع فایل قابل شناسایی نیست",
@@ -2508,6 +2576,7 @@
     "failedToLoadModel": "بارگذاری مدل سه‌بعدی انجام نشد",
     "failedToPurchaseCredits": "خرید اعتبار انجام نشد: {error}",
     "failedToQueue": "صف‌بندی انجام نشد",
+    "failedToSaveDraft": "ذخیره پیش‌نویس workflow ناموفق بود",
     "failedToToggleCamera": "تغییر وضعیت دوربین انجام نشد",
     "failedToToggleGrid": "تغییر وضعیت شبکه انجام نشد",
     "failedToUpdateBackgroundColor": "به‌روزرسانی رنگ پس‌زمینه انجام نشد",
@@ -2556,7 +2625,8 @@
     "notSet": "تنظیم نشده",
     "provider": "ارائه‌دهنده ورود",
     "title": "تنظیمات حساب کاربری من",
-    "updatePassword": "به‌روزرسانی گذرواژه"
+    "updatePassword": "به‌روزرسانی گذرواژه",
+    "workspaceSettings": "تنظیمات محیط کاری"
   },
   "validation": {
     "descriptionRequired": "توضیحات الزامی است",
@@ -2647,6 +2717,9 @@
     "saveWorkflow": "ذخیره workflow"
   },
   "workspace": {
+    "addedToWorkspace": "شما به {workspaceName} اضافه شدید",
+    "inviteAccepted": "دعوت پذیرفته شد",
+    "inviteFailed": "پذیرش دعوت ناموفق بود",
     "unsavedChanges": {
       "message": "شما تغییرات ذخیره‌نشده دارید. آیا می‌خواهید آن‌ها را رها کرده و فضای کاری را تغییر دهید؟",
       "title": "تغییرات ذخیره‌نشده"
@@ -2660,6 +2733,128 @@
       "tokenExchangeFailed": "احراز هویت با فضای کاری ناموفق بود: {error}",
       "workspaceNotFound": "فضای کاری پیدا نشد."
     }
+  },
+  "workspacePanel": {
+    "createWorkspaceDialog": {
+      "create": "ایجاد",
+      "message": "محیط‌های کاری به اعضا اجازه می‌دهند از یک اعتبار مشترک استفاده کنند. پس از ایجاد، شما مالک خواهید بود.",
+      "nameLabel": "نام محیط کاری*",
+      "namePlaceholder": "نام محیط کاری را وارد کنید",
+      "title": "ایجاد محیط کاری جدید"
+    },
+    "dashboard": {
+      "placeholder": "تنظیمات داشبورد فضای کاری"
+    },
+    "deleteDialog": {
+      "message": "هرگونه اعتبار یا دارایی ذخیره‌نشده از بین خواهد رفت. این عملیات قابل بازگشت نیست.",
+      "messageWithName": "حذف «{name}»؟ هرگونه اعتبار یا دارایی ذخیره‌نشده از بین خواهد رفت. این عملیات قابل بازگشت نیست.",
+      "title": "حذف این محیط کاری؟"
+    },
+    "editWorkspaceDialog": {
+      "nameLabel": "نام محیط کاری",
+      "save": "ذخیره",
+      "title": "ویرایش جزئیات محیط کاری"
+    },
+    "invite": "دعوت",
+    "inviteLimitReached": "شما به حداکثر تعداد ۵۰ عضو رسیده‌اید",
+    "inviteMember": "دعوت عضو",
+    "inviteMemberDialog": {
+      "createLink": "ایجاد لینک",
+      "linkCopied": "کپی شد",
+      "linkCopyFailed": "کپی لینک ناموفق بود",
+      "linkStep": {
+        "copyLink": "کپی لینک",
+        "done": "انجام شد",
+        "message": "اطمینان حاصل کنید که حساب کاربری او از این ایمیل استفاده می‌کند.",
+        "title": "این لینک را برای شخص ارسال کنید"
+      },
+      "message": "یک لینک دعوت قابل اشتراک‌گذاری برای ارسال به شخص ایجاد کنید",
+      "placeholder": "ایمیل شخص را وارد کنید",
+      "title": "دعوت یک نفر به این فضای کاری"
+    },
+    "leaveDialog": {
+      "leave": "خروج",
+      "message": "تا زمانی که با مالک محیط کاری تماس نگیرید، امکان پیوستن مجدد نخواهید داشت.",
+      "title": "خروج از این محیط کاری؟"
+    },
+    "members": {
+      "actions": {
+        "copyLink": "کپی لینک دعوت",
+        "removeMember": "حذف عضو",
+        "revokeInvite": "لغو دعوت"
+      },
+      "columns": {
+        "expiryDate": "تاریخ انقضا",
+        "inviteDate": "تاریخ دعوت",
+        "joinDate": "تاریخ پیوستن"
+      },
+      "createNewWorkspace": "یک فضای کاری جدید ایجاد کنید.",
+      "membersCount": "{count}/۵۰ عضو",
+      "noInvites": "هیچ دعوت‌نامه‌ای در انتظار نیست",
+      "noMembers": "هیچ عضوی وجود ندارد",
+      "pendingInvitesCount": "{count} دعوت‌نامه در انتظار | {count} دعوت‌نامه در انتظار",
+      "personalWorkspaceMessage": "در حال حاضر نمی‌توانید اعضای دیگری به فضای کاری شخصی خود دعوت کنید. برای افزودن اعضا به یک فضای کاری،",
+      "tabs": {
+        "active": "فعال",
+        "pendingCount": "در انتظار ({count})"
+      }
+    },
+    "menu": {
+      "deleteWorkspace": "حذف محیط کاری",
+      "deleteWorkspaceDisabledTooltip": "ابتدا اشتراک فعال محیط کاری خود را لغو کنید",
+      "editWorkspace": "ویرایش جزئیات محیط کاری",
+      "leaveWorkspace": "خروج از محیط کاری"
+    },
+    "removeMemberDialog": {
+      "error": "حذف عضو ناموفق بود",
+      "message": "این عضو از فضای کاری شما حذف خواهد شد. اعتباراتی که استفاده کرده‌اند بازگردانده نخواهد شد.",
+      "remove": "حذف عضو",
+      "success": "عضو حذف شد",
+      "title": "این عضو حذف شود؟"
+    },
+    "revokeInviteDialog": {
+      "message": "این عضو دیگر نمی‌تواند به فضای کاری شما بپیوندد. لینک دعوت او نامعتبر خواهد شد.",
+      "revoke": "لغو دعوت",
+      "title": "دعوت این شخص لغو شود؟"
+    },
+    "tabs": {
+      "dashboard": "داشبورد",
+      "membersCount": "اعضا ({count})",
+      "planCredits": "پلن و اعتبارها"
+    },
+    "toast": {
+      "failedToCreateWorkspace": "ایجاد محیط کاری ناموفق بود",
+      "failedToDeleteWorkspace": "حذف محیط کاری ناموفق بود",
+      "failedToFetchWorkspaces": "بارگذاری فضاهای کاری ناموفق بود",
+      "failedToLeaveWorkspace": "خروج از محیط کاری ناموفق بود",
+      "failedToUpdateWorkspace": "به‌روزرسانی محیط کاری ناموفق بود",
+      "workspaceCreated": {
+        "message": "برای یک طرح اشتراک ثبت‌نام کنید، هم‌تیمی‌ها را دعوت کنید و همکاری را آغاز نمایید.",
+        "subscribe": "اشتراک",
+        "title": "فضای کاری ایجاد شد"
+      },
+      "workspaceDeleted": {
+        "message": "فضای کاری به طور دائمی حذف شد.",
+        "title": "فضای کاری حذف شد"
+      },
+      "workspaceLeft": {
+        "message": "شما فضای کاری را ترک کردید.",
+        "title": "ترک فضای کاری"
+      },
+      "workspaceUpdated": {
+        "message": "جزئیات محیط کاری ذخیره شد.",
+        "title": "محیط کاری به‌روزرسانی شد"
+      }
+    }
+  },
+  "workspaceSwitcher": {
+    "createWorkspace": "ایجاد محیط کاری جدید",
+    "maxWorkspacesReached": "شما فقط می‌توانید مالک ۱۰ محیط کاری باشید. برای ایجاد محیط کاری جدید، یکی را حذف کنید.",
+    "personal": "شخصی",
+    "roleMember": "عضو",
+    "roleOwner": "مالک",
+    "subscribe": "اشتراک",
+    "switchWorkspace": "تغییر محیط کاری"
   },
   "zoomControls": {
     "hideMinimap": "مخفی‌سازی نقشه کوچک",

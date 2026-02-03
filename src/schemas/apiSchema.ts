@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { LinkMarkerShape } from '@/lib/litegraph/src/litegraph'
 import { zNodeId } from '@/platform/workflow/validation/schemas/workflowSchema'
 import { colorPalettesSchema } from '@/schemas/colorPaletteSchema'
-import { zKeybinding } from '@/schemas/keyBindingSchema'
+import { zKeybinding } from '@/platform/keybindings/types'
 import { NodeBadgeMode } from '@/types/nodeSource'
 import { LinkReleaseTriggerAction } from '@/types/searchBoxTypes'
 
@@ -315,6 +315,7 @@ const zSettings = z.object({
   'Comfy.Node.MiddleClickRerouteNode': z.boolean(),
   'Comfy.Node.ShowDeprecated': z.boolean(),
   'Comfy.Node.ShowExperimental': z.boolean(),
+  'Comfy.NodeReplacement.Enabled': z.boolean(),
   'Comfy.Pointer.ClickBufferTime': z.number(),
   'Comfy.Pointer.ClickDrift': z.number(),
   'Comfy.Pointer.DoubleClickTime': z.number(),
@@ -430,7 +431,8 @@ const zSettings = z.object({
   'LiteGraph.Node.DefaultPadding': z.boolean(),
   'LiteGraph.Pointer.TrackpadGestures': z.boolean(),
   'Comfy.VersionCompatibility.DisableWarnings': z.boolean(),
-  'Comfy.RightSidePanel.IsOpen': z.boolean()
+  'Comfy.RightSidePanel.IsOpen': z.boolean(),
+  'Comfy.Node.AlwaysShowAdvancedWidgets': z.boolean()
 })
 
 export type EmbeddingsResponse = z.infer<typeof zEmbeddingsResponse>
