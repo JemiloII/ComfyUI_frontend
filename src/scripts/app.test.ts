@@ -14,6 +14,7 @@ import {
   pasteTextNodes,
   positionBatchNodes
 } from '@/composables/usePaste'
+import { getWorkflowDataFromFile } from '@/scripts/metadata/parser'
 
 vi.mock('@/utils/litegraphUtil', () => ({
   createNode: vi.fn(),
@@ -44,7 +45,9 @@ vi.mock('@/platform/updates/common/toastStore', () => ({
   }))
 }))
 
-function createMockNode(options: Record<string, unknown> = {}): LGraphNode {
+function createMockNode(
+  options: Partial<Record<keyof LGraphNode, unknown>> = {}
+) {
   return {
     id: 1,
     pos: [0, 0],
@@ -53,7 +56,7 @@ function createMockNode(options: Record<string, unknown> = {}): LGraphNode {
     connect: vi.fn(),
     getBounding: vi.fn(() => new Float64Array([0, 0, 200, 100])),
     ...options
-  } as unknown as LGraphNode
+  } as LGraphNode
 }
 
 function createMockCanvas(): Partial<LGraphCanvas> {
@@ -67,22 +70,19 @@ function createMockCanvas(): Partial<LGraphCanvas> {
   }
 }
 
-function createImageFile(
-  name: string = 'test.png',
-  type: string = 'image/png'
-): File {
+function createTestFile(name: string, type: string): File {
   return new File([''], name, { type })
 }
 
 describe('ComfyApp', () => {
   let app: ComfyApp
-  let mockCanvas: Partial<LGraphCanvas>
+  let mockCanvas: LGraphCanvas
 
   beforeEach(() => {
     vi.clearAllMocks()
     app = new ComfyApp()
-    mockCanvas = createMockCanvas()
-    app.canvas = mockCanvas as LGraphCanvas
+    mockCanvas = createMockCanvas() as LGraphCanvas
+    app.canvas = mockCanvas
   })
 
   describe('handleFileList', () => {
@@ -94,18 +94,17 @@ describe('ComfyApp', () => {
       vi.mocked(pasteImageNodes).mockResolvedValue([mockNode1, mockNode2])
       vi.mocked(createNode).mockResolvedValue(mockBatchNode)
 
-      const file1 = createImageFile('test1.png')
-      const file2 = createImageFile('test2.jpg', 'image/jpeg')
+      const file1 = createTestFile('test1.png', 'image/png')
+      const file2 = createTestFile('test2.jpg', 'image/jpeg')
       const dataTransfer = new DataTransfer()
       dataTransfer.items.add(file1)
       dataTransfer.items.add(file2)
 
-      await app.handleFileList(dataTransfer.files)
+      const { files } = dataTransfer
 
-      expect(pasteImageNodes).toHaveBeenCalledWith(
-        mockCanvas,
-        dataTransfer.files
-      )
+      await app.handleFileList(files)
+
+      expect(pasteImageNodes).toHaveBeenCalledWith(mockCanvas, files)
       expect(createNode).toHaveBeenCalledWith(mockCanvas, 'BatchImagesNode')
       expect(mockCanvas.selectItems).toHaveBeenCalledWith([
         mockNode1,
@@ -121,7 +120,7 @@ describe('ComfyApp', () => {
       vi.mocked(pasteImageNodes).mockResolvedValue([mockNode1])
       vi.mocked(createNode).mockResolvedValue(null)
 
-      const file = createImageFile()
+      const file = createTestFile('test.png', 'image/png')
       const dataTransfer = new DataTransfer()
       dataTransfer.items.add(file)
 
@@ -133,33 +132,40 @@ describe('ComfyApp', () => {
 
     it('should handle empty file list', async () => {
       const dataTransfer = new DataTransfer()
-
-      // The implementation doesn't check for empty list and will throw
       await expect(app.handleFileList(dataTransfer.files)).rejects.toThrow()
     })
 
     it('should process supported text files', async () => {
-      const mockTextNode = createMockNode({ id: 1, type: 'PrimitiveStringMultiline' })
+      const mockTextNode = createMockNode({
+        id: 1,
+        type: 'PrimitiveStringMultiline'
+      })
       vi.mocked(isSupportedTextFile).mockReturnValue(true)
       vi.mocked(pasteTextNodes).mockResolvedValue([mockTextNode])
 
-      const textFile = new File(['test content'], 'test.txt', { type: 'text/plain' })
+      const textFile = createTestFile('test.txt', 'text/plain')
       const dataTransfer = new DataTransfer()
       dataTransfer.items.add(textFile)
 
       await app.handleFileList(dataTransfer.files)
 
-      expect(pasteTextNodes).toHaveBeenCalledWith(mockCanvas, dataTransfer.files)
-      expect(positionBatchNodes).toHaveBeenCalledWith(mockCanvas, [mockTextNode])
+      expect(pasteTextNodes).toHaveBeenCalledWith(
+        mockCanvas,
+        dataTransfer.files
+      )
+      expect(positionBatchNodes).toHaveBeenCalledWith(
+        mockCanvas,
+        [mockTextNode]
+      )
       expect(mockCanvas.selectItems).toHaveBeenCalledWith([mockTextNode])
     })
 
-    it('should not process unsupported text files', async () => {
+    it('should not process unsupported file types', async () => {
       vi.mocked(isSupportedTextFile).mockReturnValue(false)
 
-      const unsupportedFile = new File([''], 'test.exe', { type: 'application/octet-stream' })
+      const invalidFile = createTestFile('test.pdf', 'application/pdf')
       const dataTransfer = new DataTransfer()
-      dataTransfer.items.add(unsupportedFile)
+      dataTransfer.items.add(invalidFile)
 
       await app.handleFileList(dataTransfer.files)
 
@@ -170,14 +176,12 @@ describe('ComfyApp', () => {
 
   describe('handleFile', () => {
     it('should handle image files by creating LoadImage node', async () => {
-      const { getWorkflowDataFromFile } =
-        await import('@/scripts/metadata/parser')
       vi.mocked(getWorkflowDataFromFile).mockResolvedValue({})
 
       const mockNode = createMockNode()
       vi.mocked(createNode).mockResolvedValue(mockNode)
 
-      const imageFile = createImageFile()
+      const imageFile = createTestFile('test.png', 'image/png')
 
       await app.handleFile(imageFile)
 
@@ -190,10 +194,9 @@ describe('ComfyApp', () => {
     })
 
     it('should show error toast for unsupported files', async () => {
-      const { getWorkflowDataFromFile } =
-        await import('@/scripts/metadata/parser')
-      const { useToastStore } =
-        await import('@/platform/updates/common/toastStore')
+      const { useToastStore } = await import(
+        '@/platform/updates/common/toastStore'
+      )
       const mockAddAlert = vi.fn()
 
       vi.mocked(getWorkflowDataFromFile).mockResolvedValue({})
@@ -202,9 +205,10 @@ describe('ComfyApp', () => {
       } as unknown as ReturnType<typeof useToastStore>)
       vi.mocked(isSupportedTextFile).mockReturnValue(false)
 
-      const unsupportedFile = new File([''], 'test.exe', {
-        type: 'application/octet-stream'
-      })
+      const unsupportedFile = createTestFile(
+        'test.exe',
+        'application/octet-stream'
+      )
 
       await app.handleFile(unsupportedFile)
 

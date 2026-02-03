@@ -418,8 +418,8 @@ describe('cloneDataTransfer', () => {
 })
 
 function createMockNodeWithBounding(
-  options: Record<string, unknown> = {}
-): LGraphNode {
+  options: Partial<Record<keyof LGraphNode, unknown>> = {}
+) {
   return {
     id: 1,
     pos: [0, 0],
@@ -428,7 +428,7 @@ function createMockNodeWithBounding(
     connect: vi.fn(),
     getBounding: vi.fn(() => new Float64Array([0, 0, 200, 100])),
     ...options
-  } as unknown as LGraphNode
+  } as LGraphNode
 }
 
 describe('positionBatchNodes', () => {
