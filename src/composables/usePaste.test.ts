@@ -12,15 +12,22 @@ import {
   cloneDataTransfer,
   pasteImageNode,
   pasteImageNodes,
+  positionBatchNodes,
   usePaste
 } from './usePaste'
 
-function createMockNode() {
+function createMockNode(options: { [K in keyof LGraphNode]?: any } = {}) {
   return {
+    id: 1,
     pos: [0, 0],
+    size: [200, 100],
+    type: 'LoadImage',
+    connect: vi.fn(),
+    getBounding: vi.fn(() => new Float64Array([0, 0, 200, 100])),
     pasteFile: vi.fn(),
-    pasteFiles: vi.fn()
-  }
+    pasteFiles: vi.fn(),
+    ...options
+  } as LGraphNode
 }
 
 function createImageFile(
@@ -413,5 +420,73 @@ describe('cloneDataTransfer', () => {
     // Files are added from both .files and .items
     expect(cloned.files.length).toBeGreaterThanOrEqual(1)
     expect(Array.from(cloned.files)).toContain(file)
+  })
+})
+
+describe('positionBatchNodes', () => {
+  it('should position batch node to the right of first node', () => {
+    const mockNode1 = createMockNode({
+      pos: [100, 200],
+      getBounding: vi.fn(() => new Float64Array([100, 200, 300, 400]))
+    })
+    const mockBatchNode = createMockNode({ pos: [0, 0] })
+
+    positionBatchNodes(mockCanvas, [mockNode1], mockBatchNode)
+
+    expect(mockBatchNode.pos).toEqual([500, 230])
+  })
+
+  it('should stack multiple image nodes vertically', () => {
+    const mockNode1 = createMockNode({
+      pos: [100, 200],
+      type: 'LoadImage',
+      getBounding: vi.fn(() => new Float64Array([100, 200, 300, 400]))
+    })
+    const mockNode2 = createMockNode({ pos: [0, 0], type: 'LoadImage' })
+    const mockNode3 = createMockNode({ pos: [0, 0], type: 'LoadImage' })
+    const mockBatchNode = createMockNode({ pos: [0, 0] })
+
+    positionBatchNodes(
+      mockCanvas,
+      [mockNode1, mockNode2, mockNode3],
+      mockBatchNode
+    )
+
+    expect(mockNode1.pos).toEqual([100, 200])
+    expect(mockNode2.pos).toEqual([100, 594])
+    expect(mockNode3.pos).toEqual([100, 963])
+  })
+
+  it('should stack nodes vertically without a batch connector node', () => {
+    const mockNode1 = createMockNode({
+      pos: [100, 200],
+      type: 'PrimitiveStringMultiline',
+      getBounding: vi.fn(() => new Float64Array([100, 200, 300, 400]))
+    })
+    const mockNode2 = createMockNode({
+      pos: [0, 0],
+      type: 'LoaPrimitiveStringMultiline'
+    })
+    const mockNode3 = createMockNode({
+      pos: [0, 0],
+      type: 'PrimitiveStringMultiline'
+    })
+
+    positionBatchNodes(mockCanvas, [mockNode1, mockNode2, mockNode3])
+
+    expect(mockNode1.pos).toEqual([100, 200])
+    expect(mockNode2.pos).toEqual([100, 594])
+    expect(mockNode3.pos).toEqual([100, 963])
+  })
+
+  it('should call graph change once for all nodes', () => {
+    const mockNode1 = createMockNode({
+      getBounding: vi.fn(() => new Float64Array([100, 200, 300, 400]))
+    })
+    const mockBatchNode = createMockNode()
+
+    positionBatchNodes(mockCanvas, [mockNode1], mockBatchNode)
+
+    expect(mockCanvas.graph?.change).toHaveBeenCalledTimes(1)
   })
 })

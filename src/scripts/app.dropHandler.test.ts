@@ -8,6 +8,7 @@ import type {
 import { ComfyApp } from './app'
 import { createNode } from '@/utils/litegraphUtil'
 import { pasteImageNode, pasteImageNodes } from '@/composables/usePaste'
+import { getWorkflowDataFromFile } from '@/scripts/metadata/parser'
 
 vi.mock('@/utils/litegraphUtil', () => ({
   createNode: vi.fn(),
@@ -25,14 +26,6 @@ vi.mock('@/composables/usePaste', () => ({
 
 vi.mock('@/scripts/metadata/parser', () => ({
   getWorkflowDataFromFile: vi.fn()
-}))
-
-vi.mock('@/platform/updates/common/toastStore', () => ({
-  useToastStore: vi.fn(() => ({
-    addAlert: vi.fn(),
-    add: vi.fn(),
-    remove: vi.fn()
-  }))
 }))
 
 function createMockNode(options: { [K in keyof LGraphNode]?: any } = {}) {
@@ -132,48 +125,6 @@ describe('ComfyApp', () => {
 
       expect(pasteImageNodes).not.toHaveBeenCalled()
       expect(createNode).not.toHaveBeenCalled()
-    })
-  })
-
-  describe('positionBatchNodes', () => {
-    it('should position batch node to the right of first node', () => {
-      const mockNode1 = createMockNode({
-        pos: [100, 200],
-        getBounding: vi.fn(() => new Float64Array([100, 200, 300, 400]))
-      })
-      const mockBatchNode = createMockNode({ pos: [0, 0] })
-
-      app.positionBatchNodes([mockNode1], mockBatchNode)
-
-      expect(mockBatchNode.pos).toEqual([500, 230])
-    })
-
-    it('should stack multiple image nodes vertically', () => {
-      const mockNode1 = createMockNode({
-        pos: [100, 200],
-        type: 'LoadImage',
-        getBounding: vi.fn(() => new Float64Array([100, 200, 300, 400]))
-      })
-      const mockNode2 = createMockNode({ pos: [0, 0], type: 'LoadImage' })
-      const mockNode3 = createMockNode({ pos: [0, 0], type: 'LoadImage' })
-      const mockBatchNode = createMockNode({ pos: [0, 0] })
-
-      app.positionBatchNodes([mockNode1, mockNode2, mockNode3], mockBatchNode)
-
-      expect(mockNode1.pos).toEqual([100, 200])
-      expect(mockNode2.pos).toEqual([100, 594])
-      expect(mockNode3.pos).toEqual([100, 963])
-    })
-
-    it('should call graph change once for all nodes', () => {
-      const mockNode1 = createMockNode({
-        getBounding: vi.fn(() => new Float64Array([100, 200, 300, 400]))
-      })
-      const mockBatchNode = createMockNode()
-
-      app.positionBatchNodes([mockNode1], mockBatchNode)
-
-      expect(mockCanvas.graph?.change).toHaveBeenCalledTimes(1)
     })
   })
 
