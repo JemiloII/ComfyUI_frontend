@@ -45,7 +45,7 @@
     "stylelint": "stylelint --cache '{apps,packages,src}/**/*.{css,vue}'",
     "test:browser": "pnpm exec nx e2e",
     "test:browser:local": "cross-env PLAYWRIGHT_LOCAL=1 pnpm test:browser",
-    "test:unit": "nx run test",
+    "test:unit": "vitest",
     "typecheck": "vue-tsc --noEmit",
     "typecheck:browser": "vue-tsc --project browser_tests/tsconfig.json",
     "typecheck:desktop": "nx run @comfyorg/desktop-ui:typecheck",
