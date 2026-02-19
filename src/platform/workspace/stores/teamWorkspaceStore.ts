@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia'
 import { computed, ref, shallowRef } from 'vue'
 
-import { WORKSPACE_STORAGE_KEYS } from '@/platform/auth/workspace/workspaceConstants'
+import { WORKSPACE_STORAGE_KEYS } from '@/platform/workspace/workspaceConstants'
 import { clearPreservedQuery } from '@/platform/navigation/preservedQueryManager'
 import { PRESERVED_QUERY_NAMESPACES } from '@/platform/navigation/preservedQueryNamespaces'
-import { useWorkspaceAuthStore } from '@/stores/workspaceAuthStore'
+import { useWorkspaceAuthStore } from '@/platform/workspace/stores/workspaceAuthStore'
 
 import type {
   ListMembersParams,
@@ -74,6 +74,16 @@ function createWorkspaceState(workspace: WorkspaceWithRole): WorkspaceState {
     members: [],
     pendingInvites: []
   }
+}
+
+export function sortWorkspaces<T extends WorkspaceWithRole>(list: T[]): T[] {
+  return [...list].sort((a, b) => {
+    if (a.type === 'personal') return -1
+    if (b.type === 'personal') return 1
+    const dateA = a.role === 'owner' ? a.created_at : a.joined_at
+    const dateB = b.role === 'owner' ? b.created_at : b.joined_at
+    return dateA.localeCompare(dateB)
+  })
 }
 
 function getLastWorkspaceId(): string | null {
@@ -205,7 +215,9 @@ export const useTeamWorkspaceStore = defineStore('teamWorkspace', () => {
         if (hasValidSession && workspaceAuthStore.currentWorkspace) {
           // Valid session exists - fetch workspace list and verify access
           const response = await workspaceApi.list()
-          workspaces.value = response.workspaces.map(createWorkspaceState)
+          workspaces.value = sortWorkspaces(
+            response.workspaces.map(createWorkspaceState)
+          )
 
           if (workspaces.value.length === 0) {
             throw new Error('No workspaces available')
@@ -247,7 +259,9 @@ export const useTeamWorkspaceStore = defineStore('teamWorkspace', () => {
 
         // 2. No valid session - fetch workspaces and pick default
         const response = await workspaceApi.list()
-        workspaces.value = response.workspaces.map(createWorkspaceState)
+        workspaces.value = sortWorkspaces(
+          response.workspaces.map(createWorkspaceState)
+        )
 
         if (workspaces.value.length === 0) {
           throw new Error('No workspaces available')
@@ -315,7 +329,9 @@ export const useTeamWorkspaceStore = defineStore('teamWorkspace', () => {
     isFetchingWorkspaces.value = true
     try {
       const response = await workspaceApi.list()
-      workspaces.value = response.workspaces.map(createWorkspaceState)
+      workspaces.value = sortWorkspaces(
+        response.workspaces.map(createWorkspaceState)
+      )
     } finally {
       isFetchingWorkspaces.value = false
     }

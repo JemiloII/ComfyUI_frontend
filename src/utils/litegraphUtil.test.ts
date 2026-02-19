@@ -1,12 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { LiteGraph } from '@/lib/litegraph/src/litegraph'
+import type {
+  LGraph,
+  LGraphCanvas,
+  LGraphNode
+} from '@/lib/litegraph/src/litegraph'
 import type { ISerialisedGraph } from '@/lib/litegraph/src/types/serialisation'
 import type { IWidget } from '@/lib/litegraph/src/types/widgets'
 import type { InputSpec } from '@/schemas/nodeDef/nodeDefSchemaV2'
+import type { ExecutedWsMessage } from '@/schemas/apiSchema'
 import {
   compressWidgetInputSlots,
   createNode,
+  isAnimatedOutput,
+  isVideoOutput,
   migrateWidgetsValues
 } from '@/utils/litegraphUtil'
 
@@ -28,38 +36,38 @@ vi.mock('@/i18n', () => ({
   t: vi.fn((key: string) => key)
 }))
 
+function createMockCanvas(overrides: Partial<LGraphCanvas> = {}): LGraphCanvas {
+  const mockGraph = {
+    add: vi.fn((node) => node),
+    change: vi.fn()
+  } satisfies Partial<LGraph> as unknown as LGraph
+  const mockCanvas: Partial<LGraphCanvas> = {
+    graph_mouse: [100, 200],
+    graph: mockGraph,
+    ...overrides
+  }
+  return mockCanvas as LGraphCanvas
+}
+
 describe('createNode', () => {
-  let mockCanvas: any
-  let mockGraph: any
-
-  beforeEach(() => {
-    vi.clearAllMocks()
-
-    mockGraph = {
-      add: vi.fn((node) => node),
-      change: vi.fn()
-    }
-
-    mockCanvas = {
-      graph: mockGraph,
-      graph_mouse: [100, 200]
-    }
-  })
+  beforeEach(vi.clearAllMocks)
 
   it('should create a node successfully', async () => {
     const mockNode = { pos: [0, 0] }
-    vi.mocked(LiteGraph.createNode).mockReturnValue(mockNode as any)
+    vi.mocked(LiteGraph.createNode).mockReturnValue(mockNode as LGraphNode)
 
+    const mockCanvas = createMockCanvas()
     const result = await createNode(mockCanvas, 'LoadImage')
 
     expect(LiteGraph.createNode).toHaveBeenCalledWith('LoadImage')
     expect(mockNode.pos).toEqual([100, 200])
-    expect(mockGraph.add).toHaveBeenCalledWith(mockNode)
-    expect(mockGraph.change).toHaveBeenCalled()
+    expect(mockCanvas.graph!.add).toHaveBeenCalledWith(mockNode)
+    expect(mockCanvas.graph!.change).toHaveBeenCalled()
     expect(result).toBe(mockNode)
   })
 
   it('should return null when name is empty', async () => {
+    const mockCanvas = createMockCanvas()
     const result = await createNode(mockCanvas, '')
 
     expect(LiteGraph.createNode).not.toHaveBeenCalled()
@@ -68,19 +76,18 @@ describe('createNode', () => {
 
   it('should handle graph being null', async () => {
     const mockNode = { pos: [0, 0] }
-    mockCanvas.graph = null
-    vi.mocked(LiteGraph.createNode).mockReturnValue(mockNode as any)
+    const mockCanvas = createMockCanvas({ graph: null })
+    vi.mocked(LiteGraph.createNode).mockReturnValue(mockNode as LGraphNode)
 
     const result = await createNode(mockCanvas, 'LoadImage')
 
     expect(mockNode.pos).toEqual([0, 0])
     expect(result).toBeNull()
   })
-
   it('should set position based on canvas graph_mouse', async () => {
-    mockCanvas.graph_mouse = [250, 350]
+    const mockCanvas = createMockCanvas({ graph_mouse: [250, 350] })
     const mockNode = { pos: [0, 0] }
-    vi.mocked(LiteGraph.createNode).mockReturnValue(mockNode as any)
+    vi.mocked(LiteGraph.createNode).mockReturnValue(mockNode as LGraphNode)
 
     await createNode(mockCanvas, 'LoadAudio')
 
@@ -192,6 +199,106 @@ describe('migrateWidgetsValues', () => {
 
     const result = migrateWidgetsValues(inputDefs, widgets, widgetValues)
     expect(result).toEqual([42, 'fixed'])
+  })
+})
+
+function createOutput(
+  overrides: Partial<ExecutedWsMessage['output']> = {}
+): ExecutedWsMessage['output'] {
+  return { ...overrides }
+}
+
+describe('isAnimatedOutput', () => {
+  it('returns false for undefined output', () => {
+    expect(isAnimatedOutput(undefined)).toBe(false)
+  })
+
+  it('returns false when animated array is missing', () => {
+    expect(isAnimatedOutput(createOutput())).toBe(false)
+  })
+
+  it('returns false when all animated values are false', () => {
+    expect(isAnimatedOutput(createOutput({ animated: [false, false] }))).toBe(
+      false
+    )
+  })
+
+  it('returns true when any animated value is true', () => {
+    expect(isAnimatedOutput(createOutput({ animated: [false, true] }))).toBe(
+      true
+    )
+  })
+})
+
+describe('isVideoOutput', () => {
+  it('returns false for non-animated output', () => {
+    expect(
+      isVideoOutput(
+        createOutput({
+          animated: [false],
+          images: [{ filename: 'video.webm' }]
+        })
+      )
+    ).toBe(false)
+  })
+
+  it('returns false for animated webp output', () => {
+    expect(
+      isVideoOutput(
+        createOutput({
+          animated: [true],
+          images: [{ filename: 'anim.webp' }]
+        })
+      )
+    ).toBe(false)
+  })
+
+  it('returns false for animated png output', () => {
+    expect(
+      isVideoOutput(
+        createOutput({
+          animated: [true],
+          images: [{ filename: 'anim.png' }]
+        })
+      )
+    ).toBe(false)
+  })
+
+  it('returns true for animated webm output', () => {
+    expect(
+      isVideoOutput(
+        createOutput({
+          animated: [true],
+          images: [{ filename: 'output.webm' }]
+        })
+      )
+    ).toBe(true)
+  })
+
+  it('returns true for animated mp4 output', () => {
+    expect(
+      isVideoOutput(
+        createOutput({
+          animated: [true],
+          images: [{ filename: 'output.mp4' }]
+        })
+      )
+    ).toBe(true)
+  })
+
+  it('returns true for animated output with no images array', () => {
+    expect(isVideoOutput(createOutput({ animated: [true] }))).toBe(true)
+  })
+
+  it('does not false-positive on filenames containing webp as substring', () => {
+    expect(
+      isVideoOutput(
+        createOutput({
+          animated: [true],
+          images: [{ filename: 'my_webp_file.mp4' }]
+        })
+      )
+    ).toBe(true)
   })
 })
 

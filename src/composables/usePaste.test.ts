@@ -30,6 +30,15 @@ function createMockNode(options: { [K in keyof LGraphNode]?: any } = {}) {
   } as LGraphNode
 }
 
+// function createMockNode(options: { [K in keyof LGraphNode]?: any } = {}) {
+//   return {
+//     pos: [0, 0],
+//     pasteFile: vi.fn(),
+//     pasteFiles: vi.fn(),
+//     ...options
+//   } as LGraphNode
+// }
+
 function createImageFile(
   name: string = 'test.png',
   type: string = 'image/png'
@@ -208,11 +217,10 @@ describe('pasteImageNodes', () => {
 
     const file1 = createImageFile('test1.png')
     const file2 = createImageFile('test2.jpg', 'image/jpeg')
-    const fileList = createDataTransfer([file1, file2]).files
 
     const result = await pasteImageNodes(
       mockCanvas as unknown as LGraphCanvas,
-      fileList
+      [file1, file2]
     )
 
     expect(createNode).toHaveBeenCalledTimes(2)
@@ -224,11 +232,9 @@ describe('pasteImageNodes', () => {
   })
 
   it('should handle empty file list', async () => {
-    const fileList = createDataTransfer([]).files
-
     const result = await pasteImageNodes(
       mockCanvas as unknown as LGraphCanvas,
-      fileList
+      []
     )
 
     expect(createNode).not.toHaveBeenCalled()

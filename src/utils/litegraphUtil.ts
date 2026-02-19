@@ -3,12 +3,13 @@ import _ from 'es-toolkit/compat'
 import type {
   ColorOption,
   LGraph,
-  LGraphCanvas,
+  LGraphCanvas
 } from '@/lib/litegraph/src/litegraph'
-import { LiteGraph } from '@/lib/litegraph/src/litegraph'
+import type { ExecutedWsMessage } from '@/schemas/apiSchema'
 import {
   LGraphGroup,
   LGraphNode,
+  LiteGraph,
   Reroute,
   isColorable
 } from '@/lib/litegraph/src/litegraph'
@@ -19,7 +20,8 @@ import type {
 } from '@/lib/litegraph/src/types/serialisation'
 import type {
   IBaseWidget,
-  IComboWidget
+  IComboWidget,
+  WidgetCallbackOptions
 } from '@/lib/litegraph/src/types/widgets'
 import type { InputSpec } from '@/schemas/nodeDef/nodeDefSchemaV2'
 import { useToastStore } from '@/platform/updates/common/toastStore'
@@ -44,12 +46,15 @@ export async function createNode(
     return null
   }
 
-  const { graph, graph_mouse: [ posX, posY ] } = canvas
+  const {
+    graph,
+    graph_mouse: [posX, posY]
+  } = canvas
   const newNode = LiteGraph.createNode(name)
-  await new Promise(r => setTimeout(r, 0))
+  await new Promise((r) => setTimeout(r, 0))
 
   if (newNode && graph) {
-    newNode.pos = [ posX, posY ]
+    newNode.pos = [posX, posY]
     const addedNode = graph.add(newNode) ?? null
 
     if (addedNode) graph.change()
@@ -71,6 +76,32 @@ export function isImageNode(node: LGraphNode | undefined): node is ImageNode {
 export function isVideoNode(node: LGraphNode | undefined): node is VideoNode {
   if (!node) return false
   return node.previewMediaType === 'video' || !!node.videoContainer
+}
+
+/**
+ * Check if output data indicates animated content (animated webp/png or video).
+ */
+export function isAnimatedOutput(
+  output: ExecutedWsMessage['output'] | undefined
+): boolean {
+  return !!output?.animated?.find(Boolean)
+}
+
+/**
+ * Check if output data indicates video content (animated but not webp/png).
+ */
+export function isVideoOutput(
+  output: ExecutedWsMessage['output'] | undefined
+): boolean {
+  if (!isAnimatedOutput(output)) return false
+
+  const isAnimatedWebp = output?.images?.some((img) =>
+    img.filename?.endsWith('.webp')
+  )
+  const isAnimatedPng = output?.images?.some((img) =>
+    img.filename?.endsWith('.png')
+  )
+  return !isAnimatedWebp && !isAnimatedPng
 }
 
 export function isAudioNode(node: LGraphNode | undefined): boolean {
@@ -119,11 +150,12 @@ export const getItemsColorOption = (items: unknown[]): ColorOption | null => {
 
 export function executeWidgetsCallback(
   nodes: LGraphNode[],
-  callbackName: 'onRemove' | 'beforeQueued' | 'afterQueued'
+  callbackName: 'onRemove' | 'beforeQueued' | 'afterQueued',
+  options?: WidgetCallbackOptions
 ) {
   for (const node of nodes) {
     for (const widget of node.widgets ?? []) {
-      widget[callbackName]?.()
+      widget[callbackName]?.(options)
     }
   }
 }
